@@ -160,8 +160,9 @@ class ScrapAndPost:
                     href = '%s%s' % (base_url, li.a['href'])
                 except TypeError:
                     continue
-                keywords = bp.get_news_article_info(href)
-                keywords_list.extend(keywords)
+                # It's not working.
+                # keywords = bp.get_news_article_info(href)
+                # keywords_list.extend(keywords)
                 result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
@@ -455,7 +456,18 @@ class ScrapAndPost:
 
             temp = '<a href="%s" target="_blank"><font color="red">%s</font></a><br>%s, %s, %s 원<br>%s<br><br>%s<br><br><center><a href="%s" target="_blank"> <img border="0" align="middle" src="%s" width="200" height="250"></a></center>' % (link, title, author, publisher, priceSales, categoryName, desc, link, img_link)
             content = '%s<br><br>%s' % (content, temp)
-        return content
+
+        if query_type == 'ItemNewSpecial':
+            title = '[%s] 주목할 만한 신간 리스트 - 국내도서 20권(알라딘)' % bp.today
+        elif query_type == 'Bestseller':
+            title = '[%s] 베스트셀러 - 20권(알라딘)' % bp.today
+        elif query_type == 'ItemNewAll':
+            title = '[%s] 전체 신간 리스트 20권(알라딘)' % bp.today
+        elif query_type == 'BlogBest':
+            title = '[%s] 서재 블로그 이용자의 북플 베스트 20권(알라딘)' % bp.today
+
+        bp.tistory_post('scrapnpost', title, content, '765395')
+        return
 
     def kdi_research(self, bp):  # 한국개발연구원
         thema = {'A': '거시/금융',
@@ -811,6 +823,17 @@ class ScrapAndPost:
             result = await loop.run_in_executor(None, self.reddit_news, bp, subject)
         return result
 
+    def get_keyworkd(self, keywords_list):
+        return [val for sublist in keywords_list for val in sublist
+                if len(val) > 2 and
+                not val.startswith('있') and not val.startswith('것') and
+                val != '것이다' and val != '한다' and
+                val != '했다' and val != '사설' and
+                val != '칼럼' and val != '지난해' and
+                val != '한겨레' and val != '네이버' and
+                val != '부동산' and
+                val != '기자수첩']
+
     async def post_realestate(self, loop, bp):
         press_list = ['경향신문', '국민일보', '노컷뉴스', '동아일보', '매일경제',
                       '문화일보', '세계신문', '중앙일보', '조선일보', '한겨례',
@@ -819,7 +842,7 @@ class ScrapAndPost:
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'realestate')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
 
-        keywords = [val for sublist in keywords_list for val in sublist if len(val) > 1]
+        keywords = self.get_keyworkd(keywords_list)
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
         content = '''<strong>언론사 목록</strong><br>
@@ -836,6 +859,7 @@ class ScrapAndPost:
             content = '%s<br>%s<br><br>' % (content, r)
         title = '[%s] 국내 주요언론사 부동산 뉴스 헤드라인(ㄱ, ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765348')
+        bp.naver_post(title, content)
 
     async def post_opinion(self, loop, bp):
         press_list = ['경향신문', '국민일보', '노컷뉴스', '동아일보', '매일경제',
@@ -844,8 +868,8 @@ class ScrapAndPost:
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'opinion')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
+        keywords = self.get_keyworkd(keywords_list)
 
-        keywords = [val for sublist in keywords_list for val in sublist if len(val) > 1]
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
         content = '''<strong>언론사 목록</strong><br>
@@ -860,6 +884,7 @@ class ScrapAndPost:
             content = '%s<br>%s<br><br>' % (content, r)
         title = '[%s] 국내 주요언론사 사설, 칼럼 (ㄱ,ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '767067')  # 사설, 칼럼
+        bp.naver_post(title, content)
 
     async def post_reddit(self, loop, bp):
         sub_reddits = ['programming', 'todayilearned', 'worldnews',
