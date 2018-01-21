@@ -18,12 +18,16 @@ async def async_main(loop):
 
     if bp.week_num == 0:  # monday
         await dap.post_event_n_exhibit(loop, bp)
+        sap.aladin_book(bp, 'ItemNewSpecial', 20)
     elif bp.week_num == 1:
         dap.hyundai_curture_center(bp)
+        sap.aladin_book(bp, 'Bestseller', 20)
     elif bp.week_num == 2:
         dap.lotte_curture_center(bp)
+        sap.aladin_book(bp, 'ItemNewAll', 20)
     elif bp.week_num == 3:
         dap.savings(bp)  # 적금
+        sap.aladin_book(bp, 'BlogBest', 20)
     elif bp.week_num == 4:
         dap.fixed_deposit(bp)  # 예금
 
