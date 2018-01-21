@@ -49,7 +49,7 @@ class BlogPost:
         self.naver_id = os.environ.get('NAVER_ID')
         self.naver_pw = os.environ.get('NAVER_PAW')
         self.naver_redirect = os.environ.get('NAVER_BLOG_REDIRECT')
-        # self.naver_token = self.get_naver_token()
+        self.naver_token = self.get_naver_token()
 
         self.korea_data_key = os.environ.get('DATA_APT_API_KEY')
         self.finlife_key = os.environ.get('FINLIFE_KEY')
