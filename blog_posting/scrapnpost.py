@@ -831,7 +831,7 @@ class ScrapAndPost:
                 val != '했다' and val != '사설' and
                 val != '칼럼' and val != '지난해' and
                 val != '한겨레' and val != '네이버' and
-                val != '부동산' and
+                val != '안된다' and val != '부동산' and
                 val != '기자수첩']
 
     async def post_realestate(self, loop, bp):
@@ -882,13 +882,13 @@ class ScrapAndPost:
         ''' % (', '.join(common_keywords))
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
-        title = '[%s] 국내 주요언론사 사설, 칼럼 (ㄱ,ㄴ순)' % bp.today
+        title = '[%s] 국내 주요언론사 사설, 칼럼 헤드라인(ㄱ,ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '767067')  # 사설, 칼럼
         bp.naver_post(title, content)
 
     async def post_reddit(self, loop, bp):
-        sub_reddits = ['programming', 'todayilearned', 'worldnews',
-                       'Futurology', 'announcements', ]
+        sub_reddits = ['programming', 'Futurology', 'worldnews',
+                       'announcements', 'todayilearned', ]
         futures = [asyncio.ensure_future(self.fetch(sub_reddit, loop, bp, None, 'reddit')) for sub_reddit in sub_reddits]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
 
@@ -898,5 +898,6 @@ class ScrapAndPost:
         '''
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
-        title = '[%s] Reddit 오늘의 소식(프로그래밍, TIL, 세계뉴스, 미래기술, 발표/공표)' % bp.today
+        title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술, 세계뉴스, 선언/공표, TIL)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765668')  # IT news
+        bp.naver_post(title, content)
