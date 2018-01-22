@@ -508,7 +508,7 @@ class DailyLifeAndPost:
                 result = '%s<br>%s<br><br><br>' % (result, ADSENSE_MIDDLE)
         return result
 
-    def savings(self, bp, vendor='tistory'):
+    def savings(self, bp):
         grp_code = {'020000': '은행',
                     '030300': '저축은행', }
         for gcode, group in grp_code.items():
@@ -517,12 +517,11 @@ class DailyLifeAndPost:
             content = self.get_specipic_savings(bp, gcode, group)
             if content is None:
                 continue
-            if vendor == 'tistory':
-                bp.tistory_post('dexa', title, content, '731649')
-            else:
-                bp.naver_post(title, content, '9')
 
-    def fixed_deposit(self, bp, vendor='tistory'):
+            bp.tistory_post('dexa', title, content, '731649')
+            bp.naver_post(title, content, '9')
+
+    def fixed_deposit(self, bp):
 
         grp_code = {'020000': '은행',
                     '030300': '저축은행', }
@@ -532,10 +531,8 @@ class DailyLifeAndPost:
             content = self.get_fixed_deposit(bp, gcode, group)
             if content is None:
                 continue
-            if vendor == 'tistory':
-                bp.tistory_post('dexa', title, content, '731649')
-            else:
-                bp.naver_post(title, content, '9')
+            bp.tistory_post('dexa', title, content, '731649')
+            bp.naver_post(title, content, '9')
 
     def dividend_income(self, bp, rankTpcd, stkTpcd='1'):  # 주식 배당 관련 조회
         stkTpcd = '1'  # [1]보통주, [2]우선주
@@ -785,3 +782,4 @@ class DailyLifeAndPost:
 
         title = '[%s] 각종 행사 및 전시일정(예술의 전당, 코엑스, Korea Tour, 국제 전시)' % bp.today
         bp.tistory_post('dexa', title, content, '736121')  # Dexa event
+        bp.naver_post(title, content, '8')
