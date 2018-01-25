@@ -242,10 +242,19 @@ class BlogPost:
 
     def translate_text(self, text, src='en', dest='ko'):
         if src is not 'ja':
-            ja_text = self.t.translate(text, src=src, dest='ja').text
-            ko_text = self.t.translate(ja_text, src='ja', dest=dest).text
+            try:
+                ja_text = self.t.translate(text, src=src, dest='ja').text
+            except json.decoder.JSONDecodeError:
+                return None
+            try:
+                ko_text = self.t.translate(ja_text, src='ja', dest=dest).text
+            except json.decoder.JSONDecodeError:
+                return None
         else:
-            ko_text = self.t.translate(text, src=src, dest=dest).text
+            try:
+                ko_text = self.t.translate(text, src=src, dest=dest).text
+            except json.decoder.JSONDecodeError:
+                return None
         return ko_text
 
     def translate_text_list(self, article, src='en', dest='ko'):
