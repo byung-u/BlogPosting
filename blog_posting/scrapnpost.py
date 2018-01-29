@@ -835,6 +835,7 @@ class ScrapAndPost:
                 val != '칼럼' and val != '지난해' and
                 val != '한겨레' and val != '네이버' and
                 val != '안된다' and val != '부동산' and
+                val != '팀장칼럼' and val != '한국의' and
                 val != '기자수첩']
 
     async def post_realestate(self, loop, bp):
