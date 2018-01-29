@@ -21,6 +21,7 @@ async def async_main(loop):
         sap.aladin_book(bp, 'ItemNewSpecial', 20)
     elif bp.week_num == 1:
         dap.hyundai_curture_center(bp)
+        dap.realstate_trade(bp)
         sap.aladin_book(bp, 'Bestseller', 20)
     elif bp.week_num == 2:
         dap.lotte_curture_center(bp)

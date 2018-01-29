@@ -51,6 +51,7 @@ class BlogPost:
         self.naver_redirect = os.environ.get('NAVER_BLOG_REDIRECT')
         self.naver_token = self.get_naver_token()
 
+        self.apt_trade_url = os.environ.get('DATA_APT_TRADE_URL')
         self.korea_data_key = os.environ.get('DATA_APT_API_KEY')
         self.finlife_key = os.environ.get('FINLIFE_KEY')
         self.aladin_key = os.environ.get('ALADIN_TTB_KEY')
