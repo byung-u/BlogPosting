@@ -176,7 +176,7 @@ class DailyLifeAndPost:
                     apt_link = self.get_danji_url(bp, apt_addr)
                     if apt_link is None:
                         continue
-                    trade_info = '%s<br><a href="%s" target="_blank">%s %s %s %s층(%sm²) %s만원</a> [준공]%s년[거래]%s년%s월%s<br>' % (
+                    trade_info = '%s<br><a href="%s" target="_blank"><strong>%s %s %s %s층(%sm²) %s만원</strong></a> [준공]%s년[거래]%s년%s월%s<br>' % (
                                  trade_info, apt_link,
                                  district, infos[4], infos[5], infos[11], infos[8],
                                  price,
