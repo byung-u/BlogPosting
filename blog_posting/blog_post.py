@@ -17,6 +17,7 @@ from random import choice
 from requests import get, codes
 from selenium import webdriver
 from seleniumrequests import Chrome
+from twython import Twython
 
 from define import USER_AGENTS
 
@@ -50,6 +51,8 @@ class BlogPost:
         self.naver_pw = os.environ.get('NAVER_PAW')
         self.naver_redirect = os.environ.get('NAVER_BLOG_REDIRECT')
         self.naver_token = self.get_naver_token()
+
+        self.twitter = self.init_my_twitter_info()
 
         self.apt_trade_url = os.environ.get('DATA_APT_TRADE_URL')
         self.korea_data_key = os.environ.get('DATA_APT_API_KEY')
@@ -202,6 +205,14 @@ class BlogPost:
             self.logger.info(response_body.decode('utf-8'))
         else:
             self.logger.error("Error Code:" + rescode)
+
+    def init_my_twitter_info(self):
+        twitter_app_key = os.environ.get('TWITTER_APP_KEY')
+        twitter_app_secret = os.environ.get('TWITTER_APP_SECRET')
+        twitter_access_token = os.environ.get('TWITTER_ACCESS_TOKEN')
+        twitter_access_secret = os.environ.get('TWITTER_ACCESS_SECRET')
+        return Twython(twitter_app_key, twitter_app_secret,
+                       twitter_access_token, twitter_access_secret)
 
     def naver_papago_nmt(self, words):
         enc_text = urllib.parse.quote(words)
