@@ -32,6 +32,8 @@ async def async_main(loop):
     elif bp.week_num == 4:
         dap.fixed_deposit(bp)  # 예금
 
+    # everyday, very slow
+    dap.popular_twit(bp)
 
 def main():
     loop = asyncio.get_event_loop()            # 이벤트 루프를 얻음
