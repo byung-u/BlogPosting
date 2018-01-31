@@ -7,8 +7,14 @@ import urllib.request
 from bs4 import BeautifulSoup
 from requests import get
 from selenium import webdriver
+from time import sleep, time
+from twython import TwythonRateLimitError
 
-from define import ADSENSE_MIDDLE, BANK_CODE, LOAN_CODE, SAVINGS_BANK_CODE, INSURANCE_CODE, INVESTMENT_CODE
+from define import (ADSENSE_MIDDLE, BANK_CODE, LOAN_CODE,
+                    SAVINGS_BANK_CODE, INSURANCE_CODE, INVESTMENT_CODE, 
+                    POPULAR_TWITTERIAN1, POPULAR_TWITTERIAN2,
+                    POPULAR_TWITTERIAN3, POPULAR_TWITTERIAN4,
+                    POPULAR_TWITTERIAN5)
 
 
 class DailyLifeAndPost:
@@ -122,7 +128,7 @@ class DailyLifeAndPost:
         return True
 
     def realstate_trade(self, bp):
-        result = '<strong><font color="blue">[59~85m²크기의 매매가 10억 이상 아파트]</font></strong><br><br>'
+        result = '<strong><font color="blue">[59~85m²크기의 매매가 10억 이상 아파트]</font></strong><br>중소형 매매가가 10억이 넘어가면 살기 좋은 지역구라 봐도 좋을 것 같아서 매주 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
         time_str = '%4d%02d' % (bp.now.year, bp.now.month)
         apt_district_code = { 11110:  '종로구', 11140:  '중구', 11170:  '용산구',
                               11200:  '성동구', 11215:  '광진구', 11230:  '동대문구',
@@ -146,6 +152,7 @@ class DailyLifeAndPost:
 
         title = '[%s] 59~85m²크기의 매매가 10억 이상 아파트' % bp.today
         bp.tistory_post('dexa', title, result, '737831')
+        bp.naver_post(title, result, '9')
 
     def request_realstate_trade(self, bp, request_url, district):
         trade_info = ''
@@ -195,6 +202,61 @@ class DailyLifeAndPost:
                 if href.startswith('http://realestate.daum.net/maemul/danji') and href.endswith('/info'):
                     return href
         return None
+    def get_popular_twitterian(self, week_num):
+        if week_num == 0:  # monday
+            return POPULAR_TWITTERIAN1
+        elif week_num == 1:
+            return POPULAR_TWITTERIAN2
+        elif week_num == 2:
+            return POPULAR_TWITTERIAN3
+        elif week_num == 3:
+            return POPULAR_TWITTERIAN4
+        elif week_num == 4:
+            return POPULAR_TWITTERIAN5
+
+    def popular_twit(self, bp):
+        result = '<strong><font color="blue">[트위터 좋아요 1만 이상의 글들 모음]</font></strong><br>팔로워가 10만명 이상인 계정 기준으로 확인함<br>10만이상의 팔로워를 가진 계정에서 recent type으로 20개 트윗을 검색하여 1만개 이상의 좋아요가 발생한글을 모아보려함<br>도대체 어떤 트윗에 사람들이 반응하는지 알아보기 위한 포스팅.<br><br>'
+        url_set = set()
+        popular_twitterian = self.get_popular_twitterian(bp.week_num)
+        for tw, nick_name in popular_twitterian.items():
+            try:
+                tw_pop = bp.twitter.search(q=tw, result_type='recent', count=20)
+            except TwythonRateLimitError as error:
+                remainder = float(bp.twitter.get_lastfunction_header(header='x-rate-limit-reset')) - time()
+                bp.logger.error('Hang twitter limit wait for %f', remainder)
+                if remainder < 0.0:
+                    remainder = remainder * (-2)
+                sleep(remainder)
+                continue
+
+            dump_pop = json.dumps(tw_pop)
+            twits = json.loads(dump_pop)
+            favorites = ''
+            for twit in twits['statuses']:
+                try:
+                    fc = twit['retweeted_status']['favorite_count']
+                except KeyError:
+                    continue
+                if fc < 10000:
+                    # Favorite count less then 10000, pass
+                    continue
+                try:
+                    # https://twitter.com/byungwoo_jeun/status/953117433438482432
+                    url = 'https://twitter.com/%s/status/%s' % (tw[1:], twit['retweeted_status']['id'])
+                    if url in url_set:
+                        continue
+                    url_set.add(url)
+                    favorites = '%s<strong>❤️ :%s</strong>, <a href="%s" target="_blank">%s</a><br>' % (
+                                favorites,
+                                twit['retweeted_status']['favorite_count'],
+                                url, twit['retweeted_status']['text'])
+                except KeyError:
+                    continue
+            if len(favorites) > 1:
+                result = '%s<a href="https://twitter.com/%s" target="_blank"><strong>%s %s</strong></a><br>%s<br>' % (
+                         result, tw[1:], nick_name, tw, favorites)
+        title = '[%s] 5만 이상의 좋아요를 받은 트위터 모음' % (bp.today)
+        bp.tistory_post('dexa', title, result, '738217')
 
     def vic_market(self, bp):
         result = '<br>'
