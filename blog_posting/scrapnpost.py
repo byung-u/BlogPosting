@@ -826,7 +826,7 @@ class ScrapAndPost:
             result = await loop.run_in_executor(None, self.reddit_news, bp, subject)
         return result
 
-    def get_keyworkd(self, keywords_list):
+    def get_keywords(self, keywords_list):
         return [val for sublist in keywords_list for val in sublist
                 if len(val) > 2 and
                 not val.startswith('있') and not val.startswith('것') and
@@ -836,6 +836,7 @@ class ScrapAndPost:
                 val != '한겨레' and val != '네이버' and
                 val != '안된다' and val != '부동산' and
                 val != '팀장칼럼' and val != '한국의' and
+                val != '하지만' and 
                 val != '기자수첩']
 
     async def post_realestate(self, loop, bp):
@@ -846,7 +847,7 @@ class ScrapAndPost:
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'realestate')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
 
-        keywords = self.get_keyworkd(keywords_list)
+        keywords = self.get_keywords(keywords_list)
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
         content = '''<strong>언론사 목록</strong><br>
@@ -872,7 +873,7 @@ class ScrapAndPost:
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'opinion')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
-        keywords = self.get_keyworkd(keywords_list)
+        keywords = self.get_keywords(keywords_list)
 
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
