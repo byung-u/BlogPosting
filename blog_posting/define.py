@@ -622,7 +622,6 @@ POPULAR_TWITTERIAN4 = {'@camanpour': 'Christiane Amanpour',
                        '@jinuSEAN3000': 'Sean Ro',
                        '@blobyblo': '타블로 | Tablo of Epik High',
                        '@IBGDRGN': 'G-DRAGON',
-                       '@BoAkwon': 'BoA',
                        '@AsiaPrince_JKS': 'Jang Keun Suk 장근석',
                        '@DrunkenTigerJK': '아빠 최고',
                        '@Quanninomarley': 'ha dong hoon',
@@ -636,7 +635,6 @@ POPULAR_TWITTERIAN4 = {'@camanpour': 'Christiane Amanpour',
                        '@_911007': 'Nicole',
                        '@doc0102': 'DJ DOC 김창열',
                        '@jucklee': '이적 Juck Lee',
-                       '@MelodyMonthly': '윤종신',
                        '@Yoonmirae': '윤미래 Yoonmirae',
                        '@officialse7en': '세븐 SE7EN',
                        '@flyx2NAL': 'Narsha 나르샤',
@@ -836,3 +834,9 @@ POPULAR_TWITTERIAN5 = {'@ArtBasel': 'Art Basel',
                        '@TEDchris': 'Chris Anderson',
                        '@NickKristof': 'Nicholas Kristof',
                        '@I_Love_SAC': '예술의전당', }
+
+# They only advertisement, maybe BOT makes favorites count up.
+BLOCK_TWITTERIAN = {
+                       '@MelodyMonthly': '윤종신',
+                       '@BoAkwon': 'BoA',
+                       }
