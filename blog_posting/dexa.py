@@ -11,7 +11,7 @@ from time import sleep, time
 from twython import TwythonRateLimitError
 
 from define import (ADSENSE_MIDDLE, BANK_CODE, LOAN_CODE,
-                    SAVINGS_BANK_CODE, INSURANCE_CODE, INVESTMENT_CODE, 
+                    SAVINGS_BANK_CODE, INSURANCE_CODE, INVESTMENT_CODE,
                     POPULAR_TWITTERIAN1, POPULAR_TWITTERIAN2,
                     POPULAR_TWITTERIAN3, POPULAR_TWITTERIAN4,
                     POPULAR_TWITTERIAN5)
@@ -202,6 +202,7 @@ class DailyLifeAndPost:
                 if href.startswith('http://realestate.daum.net/maemul/danji') and href.endswith('/info'):
                     return href
         return None
+
     def get_popular_twitterian(self, week_num):
         if week_num == 0:  # monday
             return POPULAR_TWITTERIAN1
@@ -255,7 +256,7 @@ class DailyLifeAndPost:
             if len(favorites) > 1:
                 result = '%s<a href="https://twitter.com/%s" target="_blank"><strong>%s %s</strong></a><br>%s<br>' % (
                          result, tw[1:], nick_name, tw, favorites)
-        title = '[%s] 5만 이상의 좋아요를 받은 트위터 모음' % (bp.today)
+        title = '[%s] 1만 이상의 좋아요를 받은 트위터 모음' % (bp.today)
         bp.tistory_post('dexa', title, result, '738217')
 
     def vic_market(self, bp):
@@ -348,19 +349,38 @@ class DailyLifeAndPost:
                 continue
             result = '%s<h3>%s</h3><br><table border="1" cellspacing="0" cellpadding="3" bordercolor="#  999999" style="border-collapse:collapse">' % (result, bank)
             result = '''%s<tr>
-            <th>금융상품,가입방법</th>
+            <th width="150">예금상품</th>
             <th>우대조건</th>
             <th>가입대상</th>
-            <th>최고한도</th>
+            <th width="120">이자</th>
             </tr>''' % (result)
+            option_list_len = (len(js['result']['optionList']))
             for banks in js['result']['baseList']:
                 result = '%s<tr>' % result
-                result = '%s<td><font color="red">%s</font><br><br>➡ %s 가입<br>➡ %s<br>➡ %s</td>' % (result, banks["fin_prdt_nm"], banks['join_way'], self.join_deny(banks['join_deny']), self.dcls_end_day(banks['dcls_end_day']))
-                # result = '%s<td>%s</td>' % (result, banks["join_way"])
-                result = '%s<td>%s</td>' % (result, banks["spcl_cnd"].replace('\n', '<br>'))
-                # result = '%s<td>%s</td>' % (result, banks['join_member'])
-                result = '%s<td>%s</td>' % (result, banks['etc_note'].replace('\n', '<br>'))
-                result = '%s<td>%s</td>' % (result, self.max_limit(banks['max_limit']))
+                result = '%s<td><font color="red">%s</font><br><br>➡ %s 가입<br>➡ %s<br>➡ %s<br>➡ %s</td>' % (
+                         result,
+                         banks["fin_prdt_nm"],
+                         banks['join_way'],
+                         self.join_deny(banks['join_deny']),
+                         self.dcls_end_day(banks['dcls_end_day']),
+                         self.max_limit(banks['max_limit']))
+                result = '%s<td>%s<br><br>%s</td>' % (result,
+                                              banks["mtrt_int"].replace('\n', '<br>'),
+                                              banks["spcl_cnd"].replace('\n', '<br>'))
+                result = '%s<td>가입:%s<br><br>%s</td>' % (result, 
+                                              banks['join_member'].replace('\n', '<br>'),
+                                              banks['etc_note'].replace('\n', '<br>'))
+                fin_prdt_cd = banks['fin_prdt_cd']
+                result = '%s<td>' % result
+                for i in range(option_list_len):
+                    if fin_prdt_cd == js['result']['optionList'][i]['fin_prdt_cd']:
+                        result = '%s<br><strong>[%s]</strong><br>납입기간: %s개월<br><font color="red">저축금리: %s</font><br>최고우대금리: %s<br>' % (
+                                 result,
+                                 js['result']['optionList'][i]['intr_rate_type_nm'],
+                                 js['result']['optionList'][i]['save_trm'],
+                                 js['result']['optionList'][i]['intr_rate'],
+                                 js['result']['optionList'][i]['intr_rate2'])
+                result = '%s</td>' % result
                 result = '%s</tr>' % result
             result = '%s</table><br><br><br>' % result
             cnt += 1
