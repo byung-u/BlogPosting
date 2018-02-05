@@ -892,17 +892,14 @@ class ScrapAndPost:
         bp.naver_post(title, content)
 
     async def post_reddit(self, loop, bp):
-        sub_reddits = ['programming', 'Futurology', 'worldnews',
-                       'announcements', 'todayilearned', ]
+        # sub_reddits = ['programming', 'Futurology', 'worldnews', 'announcements', 'todayilearned', ]
+        sub_reddits = ['programming', 'Futurology']
         futures = [asyncio.ensure_future(self.fetch(sub_reddit, loop, bp, None, 'reddit')) for sub_reddit in sub_reddits]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
 
         content = '''<strong>Reddit 서브 카테고리 목록</strong><br>
     <a href="#t1001">- programming</a><br>
     <a href="#t1004">- Futurology</a><br>
-    <a href="#t1003">- worldnews</a><br>
-    <a href="#t1005">- announcements</a><br>
-    <a href="#t1002">- todayilearned</a><br>
         '''
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
