@@ -631,7 +631,7 @@ class DailyLifeAndPost:
             result = '%s<h3>%s</h3><br><table border="1" cellspacing="0" cellpadding="3" bordercolor="#999999" style="  border-collapse:collapse">' % (result, bank)
             result = '''%s<tr>
                        <th width="150">적금상품</th>
-                       <th>우대조건</th>
+                       <th width="200">우대조건</th>
                        <th width="120">이자</th>
                        </tr>''' % (result)
             for banks in js['result']['baseList']:
