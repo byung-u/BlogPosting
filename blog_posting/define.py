@@ -460,7 +460,6 @@ POPULAR_TWITTERIAN3 = {'@TIME': 'TIME',
                        '@JohnPiper': 'John Piper',
                        '@hillsongunited': 'Hillsong United',
                        '@paulwasher': 'Paul Washer',
-                       '@SMTOWNGLOBAL': 'SMTOWN GLOBAL',
                        '@psy_oppa': 'PSY',
                        '@ChungMinCho': '조정민',
                        '@WhiteHouse': 'The White House',
@@ -840,4 +839,5 @@ BLOCK_TWITTERIAN = {
                        '@BigHitEnt': 'BigHit Entertainment',
                        '@realmudo': '무한도전',
                        '@Pontifex_es': 'Papa Francisco',
+                       '@SMTOWNGLOBAL': 'SMTOWN GLOBAL',
                        }
