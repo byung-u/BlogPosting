@@ -11,11 +11,6 @@ async def async_main(loop):
     sap = ScrapAndPost()
     dap = DailyLifeAndPost()
 
-    # everyday
-    await sap.post_realestate(loop, bp)
-    await sap.post_opinion(loop, bp)
-    await sap.post_reddit(loop, bp)
-
     if bp.week_num == 0:  # monday
         await dap.post_event_n_exhibit(loop, bp)
         sap.aladin_book(bp, 'ItemNewSpecial', 20)
@@ -32,8 +27,11 @@ async def async_main(loop):
     elif bp.week_num == 4:
         dap.fixed_deposit(bp)  # 예금
 
-    # everyday, very slow
+    # everyday
     dap.popular_twit(bp)
+    await sap.post_reddit(loop, bp)
+    await sap.post_realestate(loop, bp)
+    await sap.post_opinion(loop, bp)
 
 def main():
     loop = asyncio.get_event_loop()            # 이벤트 루프를 얻음
