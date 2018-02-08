@@ -903,6 +903,7 @@ class ScrapAndPost:
         '''
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
-        title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술, 세계뉴스, 선언/공표, TIL)' % bp.today
+        # title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술, 세계뉴스, 선언/공표, TIL)' % bp.today
+        title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765668')  # IT news
         bp.naver_post(title, content)
