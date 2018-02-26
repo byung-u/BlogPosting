@@ -4,10 +4,12 @@ import asyncio
 from blog_post import BlogPost
 from dexa import DailyLifeAndPost
 from scrapnpost import ScrapAndPost
+from trab import TraceDailyComms
 
 
 async def async_main(loop):
     bp = BlogPost()
+    tap = TraceDailyComms()
     sap = ScrapAndPost()
     dap = DailyLifeAndPost()
 
@@ -28,6 +30,7 @@ async def async_main(loop):
         dap.fixed_deposit(bp)  # 예금
 
     # everyday
+    tap.korea_community_best(bp)
     dap.popular_twit(bp)
     await sap.post_reddit(loop, bp)
     await sap.post_realestate(loop, bp)
