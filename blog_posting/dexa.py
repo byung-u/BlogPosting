@@ -212,7 +212,7 @@ class DailyLifeAndPost:
             return POPULAR_TWITTERIAN3
         elif week_num == 3:
             return POPULAR_TWITTERIAN4
-        elif week_num == 4:
+        elif week_num >= 4:
             return POPULAR_TWITTERIAN5
 
     def popular_twit(self, bp):
