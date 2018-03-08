@@ -102,6 +102,8 @@ class BlogPost:
             article.parse()
         except newspaper.article.ArticleException:
             return ' '
+        except UnicodeEncodeError:
+            return ' '
         article.nlp()
         return article.keywords, article.title, article.summary
 
