@@ -206,6 +206,6 @@ class TraceDailyComms:
         r = self.nate_pann(bp)
         if r is not None:
             content = '%s<br><br>%s<br><br><br>' % (content, r)
-        title = '[%s] 커뮤니티 현재 인기글 모음(디씨인사이드, 클리앙, 루리웹, 보베드림, 오늘의 유머, 네이트판)', bp.today
+        title = '[%s] 커뮤니티 현재 인기글 모음(디씨인사이드, 클리앙, 루리웹, 보베드림, 오늘의 유머, 네이트판)' % (bp.today)
         bp.tistory_post('trab', title, content, '776709')
         bp.naver_post(title, content, '9')
