@@ -63,6 +63,7 @@ class DailyLifeAndPost:
                     fee = li.find('span', attrs={'class': 'fee'})
                     result = '%s<br><strong><a href="%s" target="_blank">%s</a></strong><br>%s<br>[%s]<br>' % (
                              result, href, li.a.text.strip(), date.text, fee.text)
+        result = '%s<br><br><br>' % (result)
         title = '[%s] 현대백화점 각 지점별 문화센터 추천강좌 일정' % bp.today
         bp.tistory_post('dexa', title, result, '730606')
         return True
@@ -123,6 +124,7 @@ class DailyLifeAndPost:
                             price = ' '.join(info)
                     result = '%s<br><strong><a href="%s" target="_blank">%s(%s)</a></strong><br>%s<br>[%s]<br>' % (
                              result, href, title, author, date, price)
+        result = '%s<br><br><br>' % (result)
         title = '[%s] 롯데백화점 각 지점별 문화센터 일정' % bp.today
         bp.tistory_post('dexa', title, result, '730606')
         return True
@@ -150,6 +152,7 @@ class DailyLifeAndPost:
                 continue
             result = '%s<br>%s<br>' % (result, trade_info)
 
+        result = '%s<br><br><br>' % (result)
         title = '[%s] 59~85m²크기의 매매가 10억 이상 아파트' % bp.today
         bp.tistory_post('dexa', title, result, '737831')
         bp.naver_post(title, result, '9')
@@ -256,6 +259,7 @@ class DailyLifeAndPost:
             if len(favorites) > 1:
                 result = '%s<a href="https://twitter.com/%s" target="_blank"><strong>%s %s</strong></a><br>%s<br>' % (
                          result, tw[1:], nick_name, tw, favorites)
+        result = '%s<br><br><br>' % (result)
         title = '[%s] 1만 이상의 좋아요를 받은 트위터 모음' % (bp.today)
         bp.tistory_post('dexa', title, result, '738217')
 
@@ -573,6 +577,7 @@ class DailyLifeAndPost:
             content = self.get_specipic_mortgage_loan(bp, gcode, group)
             if content is None:
                 continue
+            content = '%s<br><br><br>' % (content)
             bp.tistory_post('dexa', title, content, '731649')
 
     def private_loan(self, bp):
@@ -586,6 +591,7 @@ class DailyLifeAndPost:
             content = self.get_specipic_private_loan(bp, gcode, group)
             if content is None:
                 continue
+            content = '%s<br><br><br>' % (content)
             bp.tistory_post('dexa', title, content, '731649')
 
     def rent_subsidy(self, bp):
@@ -599,6 +605,7 @@ class DailyLifeAndPost:
             content = self.get_specipic_rent_subsidy(bp, gcode, group)
             if content is None:
                 continue
+            content = '%s<br><br><br>' % (content)
             bp.tistory_post('dexa', title, content, '731649')
 
     def get_specipic_savings(self, bp, gcode, group):
@@ -676,6 +683,7 @@ class DailyLifeAndPost:
             if content is None:
                 continue
 
+            content = '%s<br><br><br>' % (content)
             bp.tistory_post('dexa', title, content, '731649')
             bp.naver_post(title, content, '9')
 
@@ -689,6 +697,7 @@ class DailyLifeAndPost:
             content = self.get_fixed_deposit(bp, gcode, group)
             if content is None:
                 continue
+            content = '%s<br><br><br>' % (content)
             bp.tistory_post('dexa', title, content, '731649')
             bp.naver_post(title, content, '9')
 
@@ -937,6 +946,7 @@ class DailyLifeAndPost:
         '''
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
+        content = '%s<br><br><br>' % (content)
 
         title = '[%s] 각종 행사 및 전시일정(예술의 전당, 코엑스, Korea Tour, 국제 전시)' % bp.today
         bp.tistory_post('dexa', title, content, '736121')  # Dexa event
