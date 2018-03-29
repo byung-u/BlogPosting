@@ -5,6 +5,7 @@ import praw
 
 from bs4 import BeautifulSoup
 from collections import Counter
+from define import ADSENSE_MIDDLE
 
 
 class ScrapAndPost:
@@ -766,7 +767,7 @@ class ScrapAndPost:
             return self.realestate_mbn(bp, keywords_list)
         elif press == '문화일보':
             return self.realestate_moonhwa(bp, keywords_list)
-        elif press == '세계신문':
+        elif press == '세계일보':
             return self.realestate_segye(bp, keywords_list)
         elif press == '중앙일보':
             return self.realestate_joins(bp, keywords_list)
@@ -862,6 +863,7 @@ class ScrapAndPost:
         ''' % (', '.join(common_keywords))
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
+            # content = '%s<br>%s<br><br>%s<br>' % (content, r, ADSENSE_MIDDLE)
         title = '[%s] 국내 주요언론사 부동산 뉴스 헤드라인(ㄱ, ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765348')
         bp.naver_post(title, content)
@@ -880,13 +882,14 @@ class ScrapAndPost:
         content = '''<strong>언론사 목록</strong><br>
     <a href="#t0001">경향신문, </a> <a href="#t0002">국민일보, </a> <a href="#t0003">노컷뉴스, </a><br>
     <a href="#t0004">동아일보, </a> <a href="#t0005">매일경제, </a> <a href="#t0006">문화일보, </a><br>
-    <a href="#t0007">세계신문, </a> <a href="#t0008">중앙일보, </a> <a href="#t0009">조선일보, </a><br>
+    <a href="#t0007">세계일보, </a> <a href="#t0008">중앙일보, </a> <a href="#t0009">조선일보, </a><br>
     <a href="#t0010">한겨례, </a> <a href="#t0011">한국경제, </a> <a href="#t0012">한국일보, </a><br>
     <strong>오늘의 주요 키워드</strong><br>
     %s<br>
         ''' % (', '.join(common_keywords))
         for r in result:
             content = '%s<br>%s<br><br>' % (content, r)
+            # content = '%s<br>%s<br><br>%s<br>' % (content, r, ADSENSE_MIDDLE)
         title = '[%s] 국내 주요언론사 사설, 칼럼 헤드라인(ㄱ,ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '767067')  # 사설, 칼럼
         bp.naver_post(title, content)
