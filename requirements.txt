@@ -1,0 +1,8 @@
+newspaper3k
+beautifulsoup4
+googletrans
+goose3
+selenium
+selenium-requests
+twython
+praw
