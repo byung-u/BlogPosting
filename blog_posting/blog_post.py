@@ -39,6 +39,7 @@ class BlogPost:
         self.week_num = datetime.today().weekday()
 
         self.chromedriver_path = os.environ.get('CHROMEDRIVER_PATH')
+        self.phantomdriver_path = os.environ.get('PHANTOMDRIVER_PATH')
         self.tistory_id = os.environ.get('TISTORY_ID')
         self.tistory_pw = os.environ.get('TISTORY_PAW')
         self.tistory_cid = os.environ.get('TISTORY_CLIENT_ID')
@@ -138,7 +139,7 @@ class BlogPost:
         return token
 
     def tistory_post(self, blog_name, title, content, category):
-        webdriver = Chrome()
+        webdriver = Chrome(self.chromedriver_path)
         response = webdriver.request('POST', 'https://www.tistory.com/apis/post/write', data={"access_token": self.tistory_token, "blogName": blog_name, 'title': title, 'content': content, 'category': category, 'visibility': '2'})
         webdriver.quit()
         print(response)
