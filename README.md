@@ -1,6 +1,21 @@
 # BlogPosting
 Blog posting with python3
 
+
+# nltk download failed
+- https://github.com/keon/CodeGAN/issues/1
+
+```
+% python3
+Python 3.6.5 (default, Mar 30 2018, 06:41:53)
+[GCC 4.2.1 Compatible Apple LLVM 9.0.0 (clang-900.0.39.2)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import nltk
+>>> nltk.download()
+# and then type 'd' for download and install 'punkt'
+```
+
+
 # Memo
 * powerful_twiterian.txt 파일에는 10만 이상의 팔로워가 있는 게정 정보가 있다.
   * `UNICEF 7080923 (UNICEF)` 이런 형식으로 저장되어있다.
