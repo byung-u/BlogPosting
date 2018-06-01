@@ -36,6 +36,7 @@ async def async_main(loop):
     await sap.post_realestate(loop, bp)
     await sap.post_opinion(loop, bp)
 
+
 def main():
     loop = asyncio.get_event_loop()            # 이벤트 루프를 얻음
     loop.run_until_complete(async_main(loop))  # async_main이 끝날 때까지 기다림
