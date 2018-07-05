@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from requests import get
 from selenium import webdriver
 from time import sleep, time
-from twython import TwythonRateLimitError
+from twython import TwythonRateLimitError, exceptions
 
 from define import (ADSENSE_MIDDLE, BANK_CODE, LOAN_CODE,
                     SAVINGS_BANK_CODE, INSURANCE_CODE, INVESTMENT_CODE,
@@ -231,6 +231,8 @@ class DailyLifeAndPost:
                 if remainder < 0.0:
                     remainder = remainder * (-2)
                 sleep(remainder)
+                continue
+            except exceptions.TwythonError:
                 continue
 
             dump_pop = json.dumps(tw_pop)
