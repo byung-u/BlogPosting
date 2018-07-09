@@ -3,6 +3,7 @@ import asyncio
 import json
 import re
 import urllib.request
+import urllib.error
 
 from bs4 import BeautifulSoup
 from requests import get
@@ -780,7 +781,7 @@ class DailyLifeAndPost:
             bp.logger.error('[get_exhibit_image] UnicodeEncodeError %s', href)
             return None
         except urllib.error.URLError:
-            bp.logger.error('[get_exhibit_image] URLError %s', href)
+            bp.logger.error('[urllib.error] URLError %s', href)
             return None
         base_url = href.split('/')
         base_url = '%s//%s' % (base_url[0], base_url[2])
@@ -808,6 +809,9 @@ class DailyLifeAndPost:
         try:
             res = urllib.request.urlopen(req)
         except UnicodeEncodeError:
+            bp.logger.error('[overseasExhibition] UnicodeEncodeError')
+            return
+        except urllib.error.HTTPError:
             bp.logger.error('[overseasExhibition] UnicodeEncodeError')
             return
 
