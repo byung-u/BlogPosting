@@ -18,10 +18,14 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
+        today = '%4d. %02d. %02d' % (bp.now.year, bp.now.month, bp.now.day)
 
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
         for news_list in soup.find_all(bp.match_soup_class(['news_list'])):
             for li in news_list.find_all('li'):
+                article_date = li.find('em', attrs={'class': 'letter'}).text
+                if not article_date.startswith(today):
+                    continue
                 try:
                     title = bp.check_valid_string(li.img['alt'])
                     keywords = bp.get_news_article_info(li.a['href'])
@@ -40,12 +44,16 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
 
         base_url = 'http://news.kmib.co.kr/article'
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
         cnt = 0
         for nws_list in soup.find_all(bp.match_soup_class(['nws_list'])):
             for dl in nws_list.find_all('dl'):
+                article_date = dl.find('dd', attrs={'class': 'date'}).text
+                if not article_date.startswith(today):
+                    continue
                 if dl.text == '등록된 기사가 없습니다.':
                     result = '%s<br>현재 %s<br>' % (result, dl.text)
                     return result
@@ -67,13 +75,18 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://www.nocutnews.co.kr'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         news = soup.find(bp.match_soup_class(['newslist']))
-        for dt in news.find_all('dt'):
+        for dl in news.find_all('dl'):
+            dt = dl.find('dt')
             href = '%s%s' % (base_url, dt.a['href'])
-            title = bp.check_valid_string(dt.text)
+            title = check_valid_string(dt.text)
+            temp = (dl.find('dd', attrs={'class': 'txt'}).text).split(' ')
+            article_date = ''.join(temp[-3:])
+            if not article_date.startswith(today):
+                continue
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
             result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
@@ -85,11 +98,15 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.text, 'html.parser')
         for alist in soup.find_all(bp.match_soup_class(['articleList'])):
             tit = alist.find('span', attrs={'class': 'tit'})
             title = bp.check_valid_string(tit.text)
+            temp = (alist.a['href']).split('/')
+            article_date = temp[-3]
+            if not article_date.startswith(today):
+                continue
             keywords = bp.get_news_article_info(alist.a['href'])
             keywords_list.extend(keywords)
             result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, alist.a['href'], title)
@@ -101,12 +118,18 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
-        for f in soup.find_all(bp.match_soup_class(['art_list'])):
-            href = f.a['href']
-            title = bp.check_valid_string(f.a['title'])
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+
+        for list_area in soup.find_all(match_soup_class(['list_area'])):
+            for dl in list_area.find_all('dl'):
+                dt = dl.find('dt')
+                href = dt.a['href']
+                title = check_valid_string(dt.text)
+                article_date = dl.find('span', attrs={'class': 'date'}).text
+                if not article_date.startswith(today):
+                    continue
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_moonhwa(self, bp, keywords_list):
@@ -115,13 +138,18 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
-        for d14b_333 in soup.find_all(bp.match_soup_class(['d14b_333'])):
-            title = bp.check_valid_string(d14b_333.text)
-            keywords = bp.get_news_article_info(d14b_333['href'])
+
+        for td in soup.find_all('td', attrs={'style': 'padding:4 0 0 3'}):
+            articles = td.text.split()
+            article_date = articles[-1].replace(']', '').replace('[', '')
+            if not article_date.startswith(today):
+                continue
+            title = bp.check_valid_string(' '.join(articles[:-1]))
+            keywords = bp.get_news_article_info(td.a['href'])
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, d14b_333['href'], title)
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, td.a['href'], title)
         return result
 
     def realestate_segye(self, bp, keywords_list):
@@ -130,11 +158,14 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://www.segye.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for r_txt in soup.find_all(bp.match_soup_class(['r_txt'])):
             for dt in r_txt.find_all('dt'):
+                article_date = dt.a['href'].split('/')[-1]
+                if not article_date.startswith(today):
+                    continue
                 href = '%s%s' % (base_url, dt.a['href'])
                 title = dt.text
                 keywords = bp.get_news_article_info(href)
@@ -148,23 +179,35 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://news.joins.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
-        for f in soup.find_all(bp.match_soup_class(['bd'])):
-            for li in f.find_all('li'):
-                try:
-                    title = li.a['title']
-                except KeyError:
-                    title = bp.check_valid_string(' '.join(li.text.strip().split()[1:-2]))
-                try:
-                    href = '%s%s' % (base_url, li.a['href'])
-                except TypeError:
-                    continue
-                # It's not working.
-                # keywords = bp.get_news_article_info(href)
-                # keywords_list.extend(keywords)
-                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+        
+        for list_basic in soup.find_all(match_soup_class(['list_basic'])):
+            for ul in list_basic.find_all('ul'):
+                for li in ul.find_all('li'):
+                    title = li.find('span', attrs={'class': 'thumb'})
+                    try:
+                        temp_date = li.find('span', attrs={'class': 'byline'})
+                        temp_date = temp_date.find_all('em')
+                        article_date = temp_date[1].text.split()[0]
+                        if article_date != today:
+                            continue
+                    except AttributeError:
+                        continue
+                    try:
+                        title = title.img['alt']
+                    except AttributeError:
+                        continue
+                    try:
+                        temp = li.a['href']
+                    except KeyError:
+                        continue
+                    href = '%s%s' % (base_url, temp)
+                    title = bp.check_valid_string(title)
+                    keywords = get_news_article_info(href)
+                    keywords_list.extend(keywords)
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_chosun(self, bp, keywords_list):
@@ -173,7 +216,7 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://biz.chosun.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for f in soup.find_all(bp.match_soup_class(['list_vt'])):
@@ -181,6 +224,9 @@ class ScrapAndPost:
                 dt = li.find('dt')
                 href = '%s%s' % (base_url, li.a['href'])
                 title = bp.check_valid_string(dt.a.text)
+                article_date = li.a['href'].split('/')[-1]
+                if not article_date.startswith(today):
+                    continue
                 keywords = bp.get_news_article_info(href)
                 keywords_list.extend(keywords)
                 result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
@@ -192,10 +238,13 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://www.hani.co.kr'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for article in soup.find_all(bp.match_soup_class(['article-area'])):
+            article_date = article.find('span', attrs={'class': 'date'}).text
+            if not article_date.startswith(today):
+                continue
             href = '%s%s' % (base_url, article.a['href'])
             article = article.text.strip().split('\n')
             title = bp.check_valid_string(article[0])
@@ -210,13 +259,16 @@ class ScrapAndPost:
         if r is None:
             result = '%s<br>No article.' % result
             return result
-
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
         sessions = soup.select('div > h2 > a')
         for s in sessions:
             if s['href'] == 'http://www.hankyung.com/news/kisarank/':
                 continue
             href = s['href']
+            article_date = href.split('/')[-1]
+            if not article_date.startswith(today):
+                continue
             title = bp.check_valid_string(s.text)
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
