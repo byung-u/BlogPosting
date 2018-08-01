@@ -34,6 +34,7 @@ async def async_main(loop):
     dap.popular_twit(bp)
     await sap.post_reddit(loop, bp)
     await sap.post_realestate(loop, bp)
+    await sap.post_economy(loop, bp)
     await sap.post_opinion(loop, bp)
 
 

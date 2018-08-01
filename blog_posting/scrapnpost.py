@@ -14,6 +14,309 @@ class ScrapAndPost:
     def __init__(self):
         pass
 
+    def economy_hankyung(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        urls = ['http://news.hankyung.com/economy/0401',
+                'http://news.hankyung.com/economy/0402',
+                'http://news.hankyung.com/economy/0403',
+                'http://news.hankyung.com/economy/0404-0405',
+                'http://news.hankyung.com/economy/0408',
+                'http://news.hankyung.com/economy/0409',
+                'http://news.hankyung.com/economy/0400']
+        for url in urls:
+            r = bp.request_and_get(url)
+            if r is None:
+                continue
+            today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+            soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
+            sessions = soup.select('div > h2 > a')
+            for s in sessions:
+                if s['href'] == 'http://www.hankyung.com/news/kisarank/':
+                    continue
+                href = s['href']
+                title = bp.check_valid_string(s.text)
+                article_date = href.split('/')[-1]
+                if not article_date.startswith(today):
+                    continue
+                if cnt == 0:
+                    result = '%s<br>📰 한국경제<br>' % result
+                cnt += 1
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                keywords = bp.get_news_article_info(href)
+                keywords_list.extend(keywords)
+        return result
+
+    def economy_chosun(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        r = bp.request_and_get('http://biz.chosun.com/svc/list_in/list.html?catid=2&gnb_marketlist')
+        if r is None:
+            return
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+        base_url = 'http://biz.chosun.com'
+        soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+        for f in soup.find_all(bp.match_soup_class(['list_vt'])):
+            for li in f.find_all('li'):
+                dt = li.find('dt')
+                href = '%s%s' % (base_url, li.a['href'])
+                title = bp.check_valid_string(dt.a.text)
+                article_date = li.a['href'].split('/')[-1]
+                if not article_date.startswith(today):
+                    continue
+                if cnt == 0:
+                    result = '%s<br>📰 조선일보<br>' % result
+                cnt += 1
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                keywords = bp.get_news_article_info(href)
+                keywords_list.extend(keywords)
+        return result
+
+    def economy_joins(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        urls = ['https://news.joins.com/money/economy/list?cloc=joongang|article|subsection',
+                'https://news.joins.com/money/finance/list?cloc=joongang|section|subsection',
+                'https://news.joins.com/money/stock/list?cloc=joongang|section|subsection']
+        for url in urls:
+            r = bp.request_and_get(url)
+            if r is None:
+                continue
+            today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+            base_url = 'http://realestate.joins.com'
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for list_basic in soup.find_all(bp.match_soup_class(['list_basic'])):
+                for ul in list_basic.find_all('ul'):
+                    for li in ul.find_all('li'):
+                        title = li.find('span', attrs={'class': 'thumb'})
+                        try:
+                            temp_date = li.find('span', attrs={'class': 'byline'})
+                            temp_date = temp_date.find_all('em')
+                            article_date = temp_date[1].text.split()[0]
+                            if article_date != today:
+                                continue
+                        except AttributeError:
+                            continue
+                        try:
+                            title = title.img['alt']
+                        except AttributeError:
+                            continue
+                        try:
+                            temp = li.a['href']
+                        except KeyError:
+                            continue
+                        href = '%s%s' % (base_url, temp)
+                        if cnt == 0:
+                            result = '%s<br>📰 중앙일보<br>' % result
+                        cnt += 1
+                        result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                        keywords = bp.get_news_article_info(href)
+                        keywords_list.extend(keywords)
+        return result
+
+    def economy_mbn(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        urls = ['http://news.mk.co.kr/newsList.php?sc=30100033',
+                'http://news.mk.co.kr/newsList.php?sc=30100034',
+                'http://news.mk.co.kr/newsList.php?sc=30100035',
+                'http://news.mk.co.kr/newsList.php?sc=30100036',
+                'http://news.mk.co.kr/newsList.php?sc=30100037',
+                'http://news.mk.co.kr/newsList.php?sc=30100038',
+                'http://news.mk.co.kr/newsList.php?sc=30100039',
+                'http://news.mk.co.kr/newsList.php?sc=30100040']
+        for url in urls:
+            r = bp.request_and_get(url)
+            if r is None:
+                continue
+            today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+            soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
+            for list_area in soup.find_all(bp.match_soup_class(['list_area'])):
+                for dl in list_area.find_all('dl'):
+                    dt = dl.find('dt')
+                    href = dt.a['href']
+                    title = bp.check_valid_string(dt.text)
+                    article_date = dl.find('span', attrs={'class': 'date'}).text
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 매일경제<br>' % result
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                    cnt += 1
+                    keywords = bp.get_news_article_info(href)
+                    try:
+                        keywords_list.extend(keywords)
+                    except TypeError:
+                        continue
+        return result
+
+    def economy_gyunghyang(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        urls = ['http://biz.khan.co.kr/khan_art_list.html?category=economy',
+                'http://biz.khan.co.kr/khan_art_list.html?category=finance',
+                'http://biz.khan.co.kr/khan_art_list.html?category=industry',
+                'http://biz.khan.co.kr/khan_art_list.html?category=company']
+        for url in urls:
+            r = bp.request_and_get(url)
+            if r is None:
+                continue
+            today = '%4d. %02d. %02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+            soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
+            for news_list in soup.find_all(bp.match_soup_class(['news_list'])):
+                for li in news_list.find_all('li'):
+                    try:
+                        article_date = li.find('em', attrs={'class': 'letter'}).text
+                        if not article_date.startswith(today):
+                            continue
+                        if cnt == 0:
+                            result = '%s<br>📰 경향신문<br>' % result
+                        cnt += 1
+                        title = li.find('strong', attrs={'class': 'hd_title'})
+                        result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                                 result, title.a['href'], title.text)
+                        keywords = bp.get_news_article_info(title.a['href'])
+                        keywords_list.extend(keywords)
+                    except TypeError:
+                        continue
+            return result
+
+    def economy_thebell(self, bp, keywords_list):
+        result = ''
+        driver = webdriver.Chrome(bp.chromedriver_path)
+        base_url = 'https://www.thebell.co.kr/free/content'
+        cnt = 0
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        for i in range(1, 15):  # 무한으로 돌리니 한도끝도 없이 돌아서
+            driver.implicitly_wait(3)
+            url = 'https://www.thebell.co.kr/free/content/article.asp?page=%d&svccode=00' % i
+            driver.get(url)
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            for list_box in soup.find_all(bp.match_soup_class(['listBox'])):
+                for dl in list_box.find_all('dl'):
+                    for idx, dd in enumerate(dl.find_all('dd')):
+                        if idx == 1:
+                            article_date = dd.find('span', attrs={'class': 'date'}).text
+                            break
+                    if article_date is None:
+                        continue
+                    if not article_date.startswith(today):
+                        continue
+                    dt = dl.find('dt')
+                    title = dt.text
+                    if cnt == 0:
+                        result = '%s<br>📰 the bell<br>' % result
+                    cnt += 1
+                    href = '%s/%s' % (base_url, dl.a['href'])
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        driver.quit()
+        return result
+
+    def economy_sedaily(self, bp, keywords_list):
+        result = ''
+        urls = ['http://www.sedaily.com/NewsList/GC01',   # 경제 동향
+                'http://www.sedaily.com/NewsList/GC02',
+                'http://www.sedaily.com/NewsList/GC03',
+                'http://www.sedaily.com/NewsList/GC04',
+                'http://www.sedaily.com/NewsList/GC05',
+                'http://www.sedaily.com/NewsList/GC06',
+                'http://www.sedaily.com/NewsList/GC07',
+                'http://www.sedaily.com/NewsList/GC08',
+                'http://www.sedaily.com/NewsList/GC09',
+                'http://www.sedaily.com/NewsList/GC10',
+                'http://www.sedaily.com/NewsList/GC11',
+                'http://www.sedaily.com/NewsList/GC12',
+                'http://www.sedaily.com/NewsList/GC13',
+                ]
+
+        base_url = 'http://www.sedaily.com'
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        cnt = 0
+        for url in urls:
+            r = bp.request_and_get(url)
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for news_list in soup.find_all(bp.match_soup_class(['news_list'])):
+                for li in news_list.find_all('li'):
+                    dt = li.find('dt')
+                    href = '%s%s' % (base_url, dt.a['href'])
+                    dd = li.find('dd')
+                    article_date = dd.find('span', attrs={'class': 'letter'}).text
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 서울경제<br>' % result
+                    cnt += 1
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, href, dt.text)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        return result
+
+    def economy_cnews(self, bp, keywords_list):
+        result = ''
+        base_url = 'http://www.cnews.co.kr/uhtml/read.jsp?idxno='
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        cnt = 0
+        urls = ['http://www.cnews.co.kr/uhtml/autosec/S1N2_S2N17_1.html',  # 경제정책
+                'http://www.cnews.co.kr/uhtml/autosec/S1N2_S2N18_1.html',  # 금융
+                'http://www.cnews.co.kr/uhtml/autosec/S1N2_S2N19_1.html',  # 기업
+                'http://www.cnews.co.kr/uhtml/autosec/S1N2_S2N20_1.html',  # 증권
+                'http://www.cnews.co.kr/uhtml/autosec/S1N2_S2N21_1.html',  # 비즈
+                ]
+        for url in urls:
+            r = bp.request_and_get(url)
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for sub_list in soup.find_all(bp.match_soup_class(['sub_main_news_list_2'])):
+                for li in sub_list.find_all('li'):
+                    title = li.find('div', {'class': 'title'})
+                    article_date = li.a['href'].split("'")[1]
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 건설경제<br>' % result
+                    cnt += 1
+                    href = '%s%s' % (base_url, article_date)
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, href, title.text)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        return result
+
+    def economy_yonhapnews(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        urls = ['http://www.yonhapnews.co.kr/economy/0301000001.html',
+                'http://www.yonhapnews.co.kr/economy/0302000001.html']
+        for url in urls:
+            r = bp.request_and_get(url)
+            if r is None:
+                continue
+            today = '%4d/%02d/%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for sect02 in soup.find_all(bp.match_soup_class(['section02'])):
+                for div in sect02.find_all('div'):
+                    href = div.a['href']
+                    urls = div.a['href'].split('/')
+                    article_date = '/'.join(urls[4:7])
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 연합뉴스<br>' % result
+                    cnt += 1
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, href, div.a.text)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        return result
+
     def realestate_molit(self, bp, keywords_list):
         result = ''
         cnt = 0
@@ -1050,6 +1353,27 @@ class ScrapAndPost:
             result = '[' + press + '] No article.'
             return result
 
+    def economy_news(self, bp, press, keywords_list):
+        if press == '연합뉴스':
+            return self.economy_yonhapnews(bp, keywords_list)
+        elif press == '건설경제':
+            return self.economy_cnews(bp, keywords_list)
+        elif press == '서울경제':
+            return self.economy_sedaily(bp, keywords_list)
+        elif press == '더벨':
+            return self.economy_thebell(bp, keywords_list)
+        elif press == '경향신문':
+            return self.economy_gyunghyang(bp, keywords_list)
+        elif press == '매일경제':
+            return self.economy_mbn(bp, keywords_list)
+        elif press == '조선일보':
+            return self.economy_chosun(bp, keywords_list)
+        elif press == '한국경제':
+            return self.economy_hankyung(bp, keywords_list)
+        else:
+            result = '[' + press + '] No article.'
+            return result
+
     def opinion_news(self, bp, press, keywords_list):
         if press == '경향신문':
             return self.opinion_gyunghyang(bp, keywords_list)
@@ -1082,6 +1406,8 @@ class ScrapAndPost:
     async def fetch(self, subject, loop, bp, keywords_list, category):
         if category == 'realestate':
             result = await loop.run_in_executor(None, self.realestate_news, bp, subject, keywords_list)
+        elif category == 'economy':
+            result = await loop.run_in_executor(None, self.economy_news, bp, subject, keywords_list)
         elif category == 'opinion':
             result = await loop.run_in_executor(None, self.opinion_news, bp, subject, keywords_list)
         elif category == 'reddit':
@@ -1100,6 +1426,27 @@ class ScrapAndPost:
                 val != '팀장칼럼' and val != '한국의' and
                 val != '하지만' and
                 val != '기자수첩']
+
+    async def post_economy(self, loop, bp):
+        press_list = ['연합뉴스', '건설경제', '서울경제', '더벨', '경향신문',
+                      '매일경제', '조선일보', '한국경제']
+        keywords_list = []
+        futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'economy')) for press in press_list]
+        result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
+
+        keywords = self.get_keywords(keywords_list)
+        counter = Counter(keywords)
+        common_keywords = [c[0] for c in counter.most_common(5)]
+        content = '''<strong>오늘의 주요 키워드</strong><br>
+    %s<br>
+        ''' % (', '.join(common_keywords))
+        for r in result:
+            if r is None or len(r) == 0:
+                continue
+            content = '%s<br>%s<br><br>' % (content, r)
+        title = '[%s] 국내 언론사 경제 뉴스 헤드라인' % bp.today
+        bp.tistory_post('scrapnpost', title, content, '765348')
+        bp.naver_post(title, content)
 
     async def post_realestate(self, loop, bp):
         press_list = ['국토교통부', '연합뉴스', '매일경제', '건설경제',
