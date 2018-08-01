@@ -5,45 +5,168 @@ import praw
 
 from bs4 import BeautifulSoup
 from collections import Counter
-from define import ADSENSE_MIDDLE
+from itertools import count
+from selenium import webdriver
+# from define import ADSENSE_MIDDLE
 
 
 class ScrapAndPost:
     def __init__(self):
         pass
 
+    def realestate_molit(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        r = bp.request_and_get('http://www.molit.go.kr/USR/NEWS/m_71/lst.jsp')
+        if r is None:
+            return
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        for tbody in soup.find_all('tbody'):
+            for tr in tbody.find_all('tr'):
+                for idx, td in enumerate(tr.find_all('td')):
+                    if idx == 3:
+                        article_date = td.text
+                        break
+                try:
+                    tr.a['href']
+                except TypeError:
+                    continue
+
+                if not article_date.startswith(today):
+                    continue
+                if cnt == 0:
+                    result = '%s<br>📰 국토교통부 보도자료<br>' % result
+                cnt += 1
+                href = 'http://www.molit.go.kr/USR/NEWS/m_71/%s' % tr.a['href']
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                         result, href, tr.a.text.strip())
+                keywords = bp.get_news_article_info(href)
+                keywords_list.extend(keywords)
+        return result
+
+    def realestate_yonhapnews(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        r = bp.request_and_get('http://www.yonhapnews.co.kr/economy/0304000001.html')
+        if r is None:
+            return
+        today = '%4d/%02d/%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
+        soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+        for sect02 in soup.find_all(bp.match_soup_class(['section02'])):
+            for div in sect02.find_all('div'):
+                href = div.a['href']
+                urls = div.a['href'].split('/')
+                article_date = '/'.join(urls[4:7])
+                if not article_date.startswith(today):
+                    continue
+                if cnt == 0:
+                    result = '%s<br>📰 연합뉴스<br>' % result
+                cnt += 1
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                         result, href, div.a.text)
+                keywords = bp.get_news_article_info(href)
+                keywords_list.extend(keywords)
+        return result
+
+    def realestate_cnews(self, bp, keywords_list):
+        result = ''
+        base_url = 'http://www.cnews.co.kr/uhtml/read.jsp?idxno='
+        today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        cnt = 0
+        urls = ['http://www.cnews.co.kr/uhtml/autosec/S1N1_S2N12_1.html',  # 분양
+                'http://www.cnews.co.kr/uhtml/autosec/S1N1_S2N13_1.html',  # 도시정비
+                'http://www.cnews.co.kr/uhtml/autosec/S1N1_S2N14_1.html',  # 개발
+                'http://www.cnews.co.kr/uhtml/autosec/S1N1_S2N15_1.html',  # 재태크
+                'http://www.cnews.co.kr/uhtml/autosec/S1N1_S2N16_1.html',  # 부동산시장
+                ]
+        for url in urls:
+            r = bp.request_and_get(url)
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for sub_list in soup.find_all(bp.match_soup_class(['sub_main_news_list_2'])):
+                for li in sub_list.find_all('li'):
+                    title = li.find('div', {'class': 'title'})
+                    article_date = li.a['href'].split("'")[1]
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 건설경제<br>' % result
+                    cnt += 1
+                    href = '%s%s' % (base_url, article_date)
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, href, title.text)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        return result
+
+    def realestate_sedaily(self, bp, keywords_list):
+        result = ''
+        urls = ['http://www.sedaily.com/NewsList/GB01',   # 정책, 제도
+                'http://www.sedaily.com/NewsList/GB02',   # 분양, 청약
+                'http://www.sedaily.com/NewsList/GB03',   # 아파트, 주택
+                'http://www.sedaily.com/NewsList/GB04',   # 오피스, 상가, 토지
+                'http://www.sedaily.com/NewsList/GB05',   # 건설업계
+                'http://www.sedaily.com/NewsList/GB06',   # 간접투자
+                'http://www.sedaily.com/NewsList/GB07',   # 기획연재
+                ]
+
+        base_url = 'http://www.sedaily.com'
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        cnt = 0
+        for url in urls:
+            r = bp.request_and_get(url)
+            soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
+            for news_list in soup.find_all(bp.match_soup_class(['news_list'])):
+                for li in news_list.find_all('li'):
+                    dt = li.find('dt')
+                    href = '%s%s' % (base_url, dt.a['href'])
+                    dd = li.find('dd')
+                    article_date = dd.find('span', attrs={'class': 'letter'}).text
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 서울경제<br>' % result
+                    cnt += 1
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, href, dt.text)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        return result
+
     def realestate_gyunghyang(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0001" id="t0001" href="#t0001" class="invisible"> </a><font color="blue">[경향신문 부동산]</font>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://biz.khan.co.kr/khan_art_list.html?category=realty')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d. %02d. %02d' % (bp.now.year, bp.now.month, bp.now.day)
 
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
         for news_list in soup.find_all(bp.match_soup_class(['news_list'])):
             for li in news_list.find_all('li'):
-                article_date = li.find('em', attrs={'class': 'letter'}).text
-                if not article_date.startswith(today):
-                    continue
                 try:
-                    title = bp.check_valid_string(li.img['alt'])
-                    keywords = bp.get_news_article_info(li.a['href'])
+                    article_date = li.find('em', attrs={'class': 'letter'}).text
+                    if not article_date.startswith(today):
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 경향신문<br>' % result
+                    cnt += 1
+                    title = li.find('strong', attrs={'class': 'hd_title'})
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                             result, title.a['href'], title.text)
+                    keywords = bp.get_news_article_info(title.a['href'])
                     keywords_list.extend(keywords)
-                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, li.a['href'], title)
                 except TypeError:
-                    title = li.a.text
-                    keywords = bp.get_news_article_info(li.a['href'])
-                    keywords_list.extend(keywords)
-                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, li.a['href'], title)
+                    continue
         return result
 
     def realestate_kookmin(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0002" id="t0002" href="#t0002" class="invisible"> </a><font color="blue">[국민일보 부동산]</font>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://news.kmib.co.kr/article/list.asp?sid1=eco')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
 
         base_url = 'http://news.kmib.co.kr/article'
@@ -55,50 +178,59 @@ class ScrapAndPost:
                 if not article_date.startswith(today):
                     continue
                 if dl.text == '등록된 기사가 없습니다.':
-                    result = '%s<br>현재 %s<br>' % (result, dl.text)
-                    return result
+                    return
                 dt = dl.find('dt')
                 href = '%s/%s' % (base_url, dt.a['href'])
                 title = bp.check_valid_string(dt.a.text)
-                if title.find('아파트') != -1 or title.find('부동산') != -1:
+                if (title.find('아파트') != -1 or
+                   title.find('국토부') != -1 or title.find('국토교통부') != -1 or
+                   title.find('전세') != -1 or title.find('전월세') != -1 or
+                   title.find('청약') != -1 or title.find('분양') != -1 or
+                   title.find('부동산') != -1):
+
+                    if cnt == 0:
+                        result = '%s<br>📰 국민일보<br>' % result
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
                     keywords = bp.get_news_article_info(href)
                     keywords_list.extend(keywords)
-                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
                     cnt += 1
-        if cnt == 0:
-            result = '%s<br>No article.' % result
         return result
 
     def realestate_nocut(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0003" id="t0003" href="#t0003" class="invisible"> </a><font color="blue">[노컷뉴스 부동산 뉴스]</font><br>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://www.nocutnews.co.kr/news/list?c1=203&c2=204&ltype=1')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
         base_url = 'http://www.nocutnews.co.kr'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         news = soup.find(bp.match_soup_class(['newslist']))
         for dl in news.find_all('dl'):
             dt = dl.find('dt')
             href = '%s%s' % (base_url, dt.a['href'])
-            title = check_valid_string(dt.text)
+            title = bp.check_valid_string(dt.text)
             temp = (dl.find('dd', attrs={'class': 'txt'}).text).split(' ')
             article_date = ''.join(temp[-3:])
             if not article_date.startswith(today):
                 continue
+            if cnt == 0:
+                result = '%s<br>📰 노컷뉴스<br>' % result
+            cnt += 1
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_donga(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0004" id="t0004" href="#t0004" class="invisible"> </a><font color="blue">[동아일보 부동산 뉴스]</font><br>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://news.donga.com/List/Economy/RE')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
         soup = BeautifulSoup(r.text, 'html.parser')
         for alist in soup.find_all(bp.match_soup_class(['articleList'])):
             tit = alist.find('span', attrs={'class': 'tit'})
@@ -107,83 +239,99 @@ class ScrapAndPost:
             article_date = temp[-3]
             if not article_date.startswith(today):
                 continue
+            if cnt == 0:
+                result = '%s<br>📰 동아일보<br>' % result
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, alist.a['href'], title)
             keywords = bp.get_news_article_info(alist.a['href'])
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, alist.a['href'], title)
+            cnt += 1
         return result
 
     def realestate_mbn(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0005" id="t0005" href="#t0005" class="invisible"> </a><font color="blue">[매일경제 부동산 뉴스]</font><br>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://news.mk.co.kr/newsList.php?sc=30000020')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
-        soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
 
-        for list_area in soup.find_all(match_soup_class(['list_area'])):
+        soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
+        for list_area in soup.find_all(bp.match_soup_class(['list_area'])):
             for dl in list_area.find_all('dl'):
                 dt = dl.find('dt')
                 href = dt.a['href']
-                title = check_valid_string(dt.text)
+                title = bp.check_valid_string(dt.text)
                 article_date = dl.find('span', attrs={'class': 'date'}).text
                 if not article_date.startswith(today):
                     continue
+                if cnt == 0:
+                    result = '%s<br>📰 매일경제<br>' % result
                 result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                cnt += 1
+                keywords = bp.get_news_article_info(href)
+                try:
+                    keywords_list.extend(keywords)
+                except TypeError:
+                    continue
         return result
 
     def realestate_moonhwa(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0006" id="t0006" href="#t0006" class="invisible"> </a><font color="blue">[문화일보 부동산]</font>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://www.munhwa.com/news/section_list.html?sec=economy&class=5')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
-
         for td in soup.find_all('td', attrs={'style': 'padding:4 0 0 3'}):
             articles = td.text.split()
             article_date = articles[-1].replace(']', '').replace('[', '')
             if not article_date.startswith(today):
                 continue
-            title = bp.check_valid_string(' '.join(articles[:-1]))
+            if cnt == 0:
+                result = '%s<br>📰 문화일보<br>' % result
+            cnt += 1
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                     result, td.a['href'], ' '.join(articles[:-1]))
             keywords = bp.get_news_article_info(td.a['href'])
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, td.a['href'], title)
         return result
 
     def realestate_segye(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0007" id="t0007" href="#t0007" class="invisible"> </a><font color="blue">[세계일보 부동산]</font>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://www.segye.com/newsList/0101030700000')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         base_url = 'http://www.segye.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for r_txt in soup.find_all(bp.match_soup_class(['r_txt'])):
             for dt in r_txt.find_all('dt'):
+                href = '%s%s' % (base_url, dt.a['href'])
+                title = dt.text
                 article_date = dt.a['href'].split('/')[-1]
                 if not article_date.startswith(today):
                     continue
-                href = '%s%s' % (base_url, dt.a['href'])
-                title = dt.text
+                if cnt == 0:
+                    result = '%s<br>📰 세계일보<br>' % result
+                cnt += 1
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
                 keywords = bp.get_news_article_info(href)
                 keywords_list.extend(keywords)
-                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_joins(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0008" id="t0008" href="#t0008" class="invisible"> </a><font color="blue">[중앙일보 부동산]</font><br>'
-        r = bp.request_and_get('http://realestate.joins.com/?cloc=joongang|section|subsection')
+        result = ''
+        cnt = 0
+        r = bp.request_and_get('http://realestate.joins.com/article/')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d.%02d.%02d' % (bp.now.year, bp.now.month, bp.now.day)
-        base_url = 'http://news.joins.com'
+
+        base_url = 'http://realestate.joins.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
-        
-        for list_basic in soup.find_all(match_soup_class(['list_basic'])):
+        for list_basic in soup.find_all(bp.match_soup_class(['list_basic'])):
             for ul in list_basic.find_all('ul'):
                 for li in ul.find_all('li'):
                     title = li.find('span', attrs={'class': 'thumb'})
@@ -204,19 +352,22 @@ class ScrapAndPost:
                     except KeyError:
                         continue
                     href = '%s%s' % (base_url, temp)
-                    title = bp.check_valid_string(title)
-                    keywords = get_news_article_info(href)
-                    keywords_list.extend(keywords)
+                    if cnt == 0:
+                        result = '%s<br>📰 중앙일보<br>' % result
+                    cnt += 1
                     result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
         return result
 
     def realestate_chosun(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0009" id="t0009" href="#t0009" class="invisible"> </a><font color="blue">[조선일보 부동산]</font>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://biz.chosun.com/svc/list_in/list.html?catid=4&gnb_global')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
         base_url = 'http://biz.chosun.com'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for f in soup.find_all(bp.match_soup_class(['list_vt'])):
@@ -227,38 +378,45 @@ class ScrapAndPost:
                 article_date = li.a['href'].split('/')[-1]
                 if not article_date.startswith(today):
                     continue
+                if cnt == 0:
+                    result = '%s<br>📰 조선일보<br>' % result
+                cnt += 1
+                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
                 keywords = bp.get_news_article_info(href)
                 keywords_list.extend(keywords)
-                result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_hani(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0010" id="t0010" href="#t0010" class="invisible"> </a><font color="blue">[한겨례 부동산 뉴스]</font><br>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get(' http://www.hani.co.kr/arti/economy/property/home01.html')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+
         base_url = 'http://www.hani.co.kr'
         soup = BeautifulSoup(r.content.decode('utf-8', 'replace'), 'html.parser')
         for article in soup.find_all(bp.match_soup_class(['article-area'])):
             article_date = article.find('span', attrs={'class': 'date'}).text
-            if not article_date.startswith(today):
-                continue
             href = '%s%s' % (base_url, article.a['href'])
             article = article.text.strip().split('\n')
             title = bp.check_valid_string(article[0])
+            if not article_date.startswith(today):
+                continue
+            if cnt == 0:
+                result = '%s<br>📰 한겨례신문<br>' % result
+            cnt += 1
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_hankyung(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0011" id="t0011" href="#t0011" class="invisible"> </a><font color="blue">[한국경제 부동산 뉴스]</font><br>'
+        result = ''
+        cnt = 0
         r = bp.request_and_get('http://land.hankyung.com/')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
         today = '%4d%02d%02d' % (bp.now.year, bp.now.month, bp.now.day)
         soup = BeautifulSoup(r.content.decode('euc-kr', 'replace'), 'html.parser')
         sessions = soup.select('div > h2 > a')
@@ -266,21 +424,24 @@ class ScrapAndPost:
             if s['href'] == 'http://www.hankyung.com/news/kisarank/':
                 continue
             href = s['href']
+            title = bp.check_valid_string(s.text)
             article_date = href.split('/')[-1]
             if not article_date.startswith(today):
                 continue
-            title = bp.check_valid_string(s.text)
+            if cnt == 0:
+                result = '%s<br>📰 한국경제<br>' % result
+            cnt += 1
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_naver(self, bp, keywords_list):
-        result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0013" id="t0013" href="#t0013" class="invisible"> </a><font color="blue">[Naver 부동산 뉴스]</font><br>'
+        result = ''
         r = bp.request_and_get('http://land.naver.com/news/headline.nhn')
         if r is None:
-            result = '%s<br>No article.' % result
-            return result
+            return
+        result = '%s<br>📰 Naver<br>' % result
 
         base_url = 'http://land.naver.com'
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -289,6 +450,7 @@ class ScrapAndPost:
             href = '%s%s' % (base_url, s['href'])
             title = bp.check_valid_string(s.text)
             keywords = bp.get_news_article_info(href)
+            keywords_list.extend(keywords)
             result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
 
         sessions = soup.select('div > ul > li > dl > dt > a')
@@ -297,12 +459,13 @@ class ScrapAndPost:
                 continue
             href = '%s%s' % (base_url, s['href'])
             title = bp.check_valid_string(s.text)
+            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
             keywords = bp.get_news_article_info(href)
             keywords_list.extend(keywords)
-            result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
         return result
 
     def realestate_nate(self, bp, keywords_list):
+        result = ''
         result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0014" id="t0014" href="#t0014" class="invisible"> </a><font color="blue">[네이트 부동산 뉴스]</font><br>'
         url = 'http://news.nate.com/subsection?cate=eco03&mid=n0303&type=c&date=%s&page=1' % bp.today
         r = bp.request_and_get(url)
@@ -406,6 +569,48 @@ class ScrapAndPost:
                     continue
                 title = bp.check_valid_string(li.a.text)
                 result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+        return result
+
+    def realestate_thebell(self, bp, keywords_list):
+        result = ''
+        driver = webdriver.Chrome(bp.chromedriver_path)
+        base_url = 'https://www.thebell.co.kr/free/content'
+        cnt = 0
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        for i in count(1):
+            driver.implicitly_wait(3)
+            url = 'https://www.thebell.co.kr/free/content/article.asp?page=%d&svccode=00' % i
+            driver.get(url)
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            for list_box in soup.find_all(bp.match_soup_class(['listBox'])):
+                for dl in list_box.find_all('dl'):
+                    for idx, dd in enumerate(dl.find_all('dd')):
+                        if idx == 1:
+                            article_date = dd.find('span', attrs={'class': 'date'}).text
+                            break
+                    if article_date is None:
+                        continue
+                    if not article_date.startswith(today):
+                        driver.quit()
+                        return
+                    dt = dl.find('dt')
+                    title = dt.text
+                    if ( title.find('부동산') == -1 and
+                         title.find('청약') == -1 and
+                         title.find('재건축') == -1 and
+                         title.find('집값') == -1 and
+                         title.find('아파트') == -1):
+                        # ignore not realestate title
+                        continue
+                    if cnt == 0:
+                        result = '%s<br>📰 the bell<br>' % result
+                    cnt += 1
+                    href = '%s/%s' % (base_url, dl.a['href'])
+                    result = '%s<br><a href="%s" target="_blank">%s</a>' % (result, href, title)
+                    keywords = bp.get_news_article_info(href)
+                    keywords_list.extend(keywords)
+        driver.quit()
         return result
 
     def financial_joins(self, bp):
@@ -807,7 +1012,17 @@ class ScrapAndPost:
         return result
 
     def realestate_news(self, bp, press, keywords_list):
-        if press == '경향신문':
+        if press == '국토교통부':
+            return self.realestate_molit(bp, keywords_list)
+        elif press == '연합뉴스':
+            return self.realestate_yonhapnews(bp, keywords_list)
+        elif press == '건설경제':
+            return self.realestate_cnews(bp, keywords_list)
+        elif press == '서울경제':
+            return self.realestate_sedaily(bp, keywords_list)
+        elif press == '더벨':
+            return self.realestate_thebell(bp, keywords_list)
+        elif press == '경향신문':
             return self.realestate_gyunghyang(bp, keywords_list)
         elif press == '국민일보':
             return self.realestate_kookmin(bp, keywords_list)
@@ -829,14 +1044,8 @@ class ScrapAndPost:
             return self.realestate_hani(bp, keywords_list)
         elif press == '한국경제':
             return self.realestate_hankyung(bp, keywords_list)
-        elif press == '한국일보':
-            return '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t0012" id="t0012" href="#t0012" class="invisible"> </a><font color="blue">[한국일보 부동산 뉴스]</font><br>No article'
         elif press == '네이버':
             return self.realestate_naver(bp, keywords_list)
-        elif press == '네이트':
-            return self.realestate_nate(bp, keywords_list)
-        elif press == '다음':
-            return self.realestate_daum(bp, keywords_list)
         else:
             result = '[' + press + '] No article.'
             return result
@@ -889,13 +1098,15 @@ class ScrapAndPost:
                 val != '한겨레' and val != '네이버' and
                 val != '안된다' and val != '부동산' and
                 val != '팀장칼럼' and val != '한국의' and
-                val != '하지만' and 
+                val != '하지만' and
                 val != '기자수첩']
 
     async def post_realestate(self, loop, bp):
-        press_list = ['경향신문', '국민일보', '노컷뉴스', '동아일보', '매일경제',
-                      '문화일보', '세계신문', '중앙일보', '조선일보', '한겨례',
-                      '한국경제', '한국일보', '네이버', '네이트', '다음']
+        press_list = ['국토교통부', '연합뉴스', '매일경제', '건설경제',
+                      '서울경제', '더벨',
+                      '경향신문', '국민일보', '노컷뉴스', '동아일보',
+                      '문화일보', '중앙일보', '조선일보', '한겨례',
+                      '한국경제', '네이버']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'realestate')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
@@ -903,20 +1114,15 @@ class ScrapAndPost:
         keywords = self.get_keywords(keywords_list)
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
-        content = '''<strong>언론사 목록</strong><br>
-    <a href="#t0001">경향신문, </a> <a href="#t0002">국민일보, </a> <a href="#t0003">노컷뉴스, </a><br>
-    <a href="#t0004">동아일보, </a> <a href="#t0005">매일경제, </a> <a href="#t0006">문화일보, </a><br>
-    <a href="#t0007">세계신문, </a> <a href="#t0008">중앙일보, </a> <a href="#t0009">조선일보, </a><br>
-    <a href="#t0010">한겨례, </a> <a href="#t0011">한국경제, </a> <a href="#t0012">한국일보, </a><br>
-    <strong>포털사이트</strong><br>
-    <a href="#t0013">Naver, </a> <a href="#t0014">Nate, </a> <a href="#t0015">Daum</a><br><br>
-    <strong>오늘의 주요 키워드</strong><br>
+        content = '''<strong>오늘의 주요 키워드</strong><br>
     %s<br>
         ''' % (', '.join(common_keywords))
         for r in result:
+            if r is None or len(r) == 0:
+                continue
             content = '%s<br>%s<br><br>' % (content, r)
             # content = '%s<br>%s<br><br>%s<br>' % (content, r, ADSENSE_MIDDLE)
-        title = '[%s] 국내 주요언론사 부동산 뉴스 헤드라인(ㄱ, ㄴ순)' % bp.today
+        title = '[%s] 국내 언론사 부동산 뉴스 헤드라인' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765348')
         bp.naver_post(title, content)
 
