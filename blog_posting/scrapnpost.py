@@ -1497,7 +1497,7 @@ class ScrapAndPost:
             # content = '%s<br>%s<br><br>%s<br>' % (content, r, ADSENSE_MIDDLE)
         title = '[%s] 국내 주요언론사 사설, 칼럼 헤드라인(ㄱ,ㄴ순)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '767067')  # 사설, 칼럼
-        bp.naver_post(title, content)
+        # bp.naver_post(title, content)
 
     async def post_reddit(self, loop, bp):
         # sub_reddits = ['programming', 'Futurology', 'worldnews', 'announcements', 'todayilearned', ]
