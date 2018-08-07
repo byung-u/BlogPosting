@@ -65,7 +65,8 @@ class TraceDailyComms:
     def dcinside(self, bp):  # HIT 갤러리
         result = '<strong><font color="blue">[디씨인사이드] HIT 갤러리</font></strong>'
         url = 'http://gall.dcinside.com/board/lists/?id=hit'
-        driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        # driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        driver = webdriver.Chrome(bp.chromedriver_path)
         driver.implicitly_wait(3)
         driver.get(url)
         html = driver.page_source
@@ -102,7 +103,8 @@ class TraceDailyComms:
     def bobedream(self, bp):  # 베스트글
         result = '<strong><font color="blue">[보배드림] 베스트글</font></strong>'
         url = 'http://www.bobaedream.co.kr/list?code=best&vdate='
-        driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        # driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        driver = webdriver.Chrome(bp.chromedriver_path)
         driver.implicitly_wait(3)
         driver.get(url)
         html = driver.page_source

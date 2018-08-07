@@ -843,7 +843,8 @@ class DailyLifeAndPost:
 
     def get_sacticket(self, bp):  # 예술의 전당
         result = '<hr class="noprint" style="width: 96ex;" align="left"/><a name="t2002" id="t2002" href="#t2002" class="invisible"> </a><font color="blue">[예술의 전당 일정]</font><br>'
-        driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        # driver = webdriver.PhantomJS(bp.phantomdriver_path)
+        driver = webdriver.Chrome(bp.chromedriver_path)
         driver.implicitly_wait(3)
         url = 'https://www.sacticket.co.kr/SacHome/ticket/reservation'
         driver.get(url)
