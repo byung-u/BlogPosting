@@ -1428,7 +1428,7 @@ class ScrapAndPost:
                 val != '기자수첩']
 
     async def post_economy(self, loop, bp):
-        press_list = ['연합뉴스', '건설경제', '서울경제', '더벨', '경향신문',
+        press_list = ['더벨', '연합뉴스', '건설경제', '서울경제', '경향신문',
                       '매일경제', '조선일보', '한국경제']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'economy')) for press in press_list]
@@ -1437,9 +1437,9 @@ class ScrapAndPost:
         keywords = self.get_keywords(keywords_list)
         counter = Counter(keywords)
         common_keywords = [c[0] for c in counter.most_common(5)]
-        content = '''<strong>오늘의 주요 키워드</strong><br>
-    %s<br>
-        ''' % (', '.join(common_keywords))
+        print('경제쪽은 이게 왜 엉망이냐')
+        print(common_keywords)
+        content = ''
         for r in result:
             if r is None or len(r) == 0:
                 continue
