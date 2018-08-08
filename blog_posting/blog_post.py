@@ -150,6 +150,7 @@ class BlogPost:
         driver.get('https://nid.naver.com/nidlogin.login')
         driver.find_element_by_name('id').send_keys(self.naver_id)
         driver.find_element_by_name('pw').send_keys(self.naver_pw)
+        driver.implicitly_wait(10)
         driver.find_element_by_xpath('//*[@id="frmNIDLogin"]/fieldset/input').click()
 
         state = "REWERWERTATE"
@@ -161,10 +162,10 @@ class BlogPost:
         # driver.find_element_by_xpath('//*[@id="confirm_terms"]/a[2]').click()
         ##########################
         redirect_url = driver.current_url
+        print(redirect_url)
         temp = re.split('code=', redirect_url)
         code = re.split('&state=', temp[1])[0]
         driver.quit()
-        print(redirect_url)
 
         url = 'https://nid.naver.com/oauth2.0/token?'
         data = 'grant_type=authorization_code' + '&client_id=' + self.naver_cid + '&client_secret=' + self.naver_csec + '&redirect_uri=' + self.naver_redirect + '&code=' + code + '&state=' + state
