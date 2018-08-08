@@ -219,6 +219,40 @@ class ScrapAndPost:
         driver.quit()
         return result
 
+    def economy_thescoop(self, bp, keywords_list):
+        result = ''
+        cnt = 0
+        base_url = 'http://www.thescoop.co.kr'
+        urls = ['S1N7', 'S2N10', 'S2N29', 'S2N30', 'S2N52', 'S2N59', 'S2N69',
+                'S2N78', 'S2N70', 'S2N72', 'S2N75', 'S2N76', 'S2N77',
+                'S2N98', 'S2N99', 'S2N101', 'S2N110', ]
+        today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
+        driver = webdriver.Chrome(bp.chromedriver_path)
+        for u in urls:
+            url = 'http://www.thescoop.co.kr/news/articleList.html?page=1&total=221&sc_section_code=&sc_sub_section_code=%s&sc_serial_code=&sc_area=&sc_level=&sc_article_type=&sc_view_level=&sc_sdate=&sc_edate=&sc_serial_number=&sc_word=&view_type=sm' % u
+            driver.implicitly_wait(3)
+            driver.get(url)
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            for article_list in soup.find_all(bp.match_soup_class(['article-list-content'])):
+                for blocks in article_list.find_all(bp.match_soup_class(['list-block'])):
+                    for dated in blocks.find_all(bp.match_soup_class(['list-dated'])):
+                        article_date = dated.text.split('|')[2].strip()
+                        break
+                    if not article_date.startswith(today):
+                        continue
+                    for titles in blocks.find_all(bp.match_soup_class(['list-titles'])):
+                        if cnt == 0:
+                            result = '%s<br>📰 the belscoop<br>' % result
+                        cnt += 1
+                        href = '%s%s' % (base_url, titles.a['href'])
+                        result = '%s<br><a href="%s" target="_blank">%s</a>' % (
+                                 result, href, titles.a.text)
+                        keywords = bp.get_news_article_info(href)
+                        keywords_list.extend(keywords)
+        driver.quit()
+        return result
+
     def economy_sedaily(self, bp, keywords_list):
         result = ''
         urls = ['http://www.sedaily.com/NewsList/GC01',   # 경제 동향
@@ -899,11 +933,11 @@ class ScrapAndPost:
                         return
                     dt = dl.find('dt')
                     title = dt.text
-                    if ( title.find('부동산') == -1 and
-                         title.find('청약') == -1 and
-                         title.find('재건축') == -1 and
-                         title.find('집값') == -1 and
-                         title.find('아파트') == -1):
+                    if (title.find('부동산') == -1 and
+                       title.find('청약') == -1 and
+                       title.find('재건축') == -1 and
+                       title.find('집값') == -1 and
+                       title.find('아파트') == -1):
                         # ignore not realestate title
                         continue
                     if cnt == 0:
@@ -1362,6 +1396,8 @@ class ScrapAndPost:
             return self.economy_sedaily(bp, keywords_list)
         elif press == '더벨':
             return self.economy_thebell(bp, keywords_list)
+        elif press == '더스쿱':
+            return self.economy_thescoop(bp, keywords_list)
         elif press == '경향신문':
             return self.economy_gyunghyang(bp, keywords_list)
         elif press == '매일경제':
@@ -1428,8 +1464,8 @@ class ScrapAndPost:
                 val != '기자수첩']
 
     async def post_economy(self, loop, bp):
-        press_list = ['더벨', '연합뉴스', '건설경제', '서울경제', '경향신문',
-                      '매일경제', '조선일보', '한국경제']
+        press_list = ['더벨', '더스쿱', '연합뉴스', '건설경제', '서울경제',
+                      '경향신문', '매일경제', '조선일보', '한국경제']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'economy')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
