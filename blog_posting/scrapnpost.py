@@ -1481,7 +1481,7 @@ class ScrapAndPost:
                 continue
             content = '%s<br>%s<br><br>' % (content, r)
         title = '[%s] 국내 언론사 경제 뉴스 헤드라인' % bp.today
-        bp.tistory_post('scrapnpost', title, content, '765348')
+        bp.tistory_post('scrapnpost', title, content, '765357')
         bp.naver_post(title, content)
 
     async def post_realestate(self, loop, bp):
