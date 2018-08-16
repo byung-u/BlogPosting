@@ -6,6 +6,7 @@ import json
 import logging
 import newspaper
 import os
+import time
 import re
 import urllib.request
 
@@ -150,8 +151,9 @@ class BlogPost:
         driver.get('https://nid.naver.com/nidlogin.login')
         driver.find_element_by_name('id').send_keys(self.naver_id)
         driver.find_element_by_name('pw').send_keys(self.naver_pw)
-        driver.implicitly_wait(10)
+        # time.sleep(20)
         driver.find_element_by_xpath('//*[@id="frmNIDLogin"]/fieldset/input').click()
+        # 만약에 안되면 슬립을 주고 직접 넘기도록
 
         state = "REWERWERTATE"
         req_url = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=%s&redirect_uri=%s&state=%s' % (self.naver_cid, self.naver_redirect, state)
