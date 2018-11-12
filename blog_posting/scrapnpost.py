@@ -991,7 +991,8 @@ class ScrapAndPost:
         temp = []
         for idx, sub in enumerate(reddit.subreddit(category).hot(limit=20)):
             result = '%s<br>[%d](⬆ %s)  <a href="%s" target="_blank">%s</a><br>' % (result, idx + 1, sub.score, sub.url, sub.title)
-            title = bp.translate_text(sub.title)
+            title = sub.title
+            # title = bp.translate_text(sub.title)
             if title is None:
                 title = sub.title
             ko_text = '[%d] <a href="%s" target="_blank">%s</a><br>' % (idx + 1, sub.url, title)
