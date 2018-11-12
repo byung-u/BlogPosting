@@ -120,7 +120,8 @@ class BlogPost:
         driver.get('https://www.tistory.com/auth/login?redirectUrl=http%3A%2F%2Fwww.tistory.com%2F')
         driver.find_element_by_name('loginId').send_keys(self.tistory_id)
         driver.find_element_by_name('password').send_keys(self.tistory_pw)
-        driver.find_element_by_xpath('//*[@id="authForm"]/fieldset/div/button').click()
+        # driver.find_element_by_xpath('//*[@id="authForm"]/fieldset/div/button').click()
+        driver.find_element_by_xpath('//*[@id="authForm"]/fieldset/button').click()
 
         req_url = 'https://www.tistory.com/oauth/authorize/?client_id=%s&redirect_uri=%s&response_type=token' % (self.tistory_cid, self.tistory_redirect)
         driver.get(req_url)
