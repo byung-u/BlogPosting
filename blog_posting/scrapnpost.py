@@ -1483,7 +1483,7 @@ class ScrapAndPost:
             content = '%s<br>%s<br><br>' % (content, r)
         title = '[%s] 국내 언론사 경제 뉴스 헤드라인' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765357')
-        bp.naver_post(title, content)
+        # bp.naver_post(title, content)
 
     async def post_realestate(self, loop, bp):
         press_list = ['국토교통부', '연합뉴스', '매일경제', '건설경제',
@@ -1508,7 +1508,7 @@ class ScrapAndPost:
             # content = '%s<br>%s<br><br>%s<br>' % (content, r, ADSENSE_MIDDLE)
         title = '[%s] 국내 언론사 부동산 뉴스 헤드라인' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765348')
-        bp.naver_post(title, content)
+        # bp.naver_post(title, content)
 
     async def post_opinion(self, loop, bp):
         press_list = ['경향신문', '국민일보', '노컷뉴스', '동아일보', '매일경제',
@@ -1551,4 +1551,4 @@ class ScrapAndPost:
         # title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술, 세계뉴스, 선언/공표, TIL)' % bp.today
         title = '[%s] Reddit 오늘의 소식(프로그래밍, 미래기술)' % bp.today
         bp.tistory_post('scrapnpost', title, content, '765668')  # IT news
-        bp.naver_post(title, content)
+        # bp.naver_post(title, content)
