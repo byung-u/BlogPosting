@@ -52,7 +52,7 @@ class BlogPost:
         self.naver_id = os.environ.get('NAVER_ID')
         self.naver_pw = os.environ.get('NAVER_PAW')
         self.naver_redirect = os.environ.get('NAVER_BLOG_REDIRECT')
-        self.naver_token = self.get_naver_token()
+        # self.naver_token = self.get_naver_token()
 
         self.twitter = self.init_my_twitter_info()
 
@@ -150,11 +150,16 @@ class BlogPost:
         driver = webdriver.Chrome(self.chromedriver_path)  # driver = webdriver.PhantomJS()
         driver.implicitly_wait(3)
         driver.get('https://nid.naver.com/nidlogin.login')
+        driver.find_element_by_xpath('//*[@id="label_ip_on"]').click()
         driver.find_element_by_name('id').send_keys(self.naver_id)
         driver.find_element_by_name('pw').send_keys(self.naver_pw)
-        # time.sleep(20)
+        driver.find_element_by_xpath('//*[@id="label_login_chk"]').click()
         driver.find_element_by_xpath('//*[@id="frmNIDLogin"]/fieldset/input').click()
-        # 만약에 안되면 슬립을 주고 직접 넘기도록
+        time.sleep(3)
+        driver.find_element_by_name('id').send_keys(self.naver_id)
+        driver.find_element_by_name('pw').send_keys(self.naver_pw)
+        driver.find_element_by_xpath('//*[@id="label_login_chk"]').click()
+        driver.find_element_by_xpath('//*[@id="frmNIDLogin"]/fieldset/input').click()
 
         state = "REWERWERTATE"
         req_url = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=%s&redirect_uri=%s&state=%s' % (self.naver_cid, self.naver_redirect, state)
