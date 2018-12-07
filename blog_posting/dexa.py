@@ -16,6 +16,7 @@ from define import (ADSENSE_MIDDLE, BANK_CODE, LOAN_CODE,
                     POPULAR_TWITTERIAN1, POPULAR_TWITTERIAN2,
                     POPULAR_TWITTERIAN3, POPULAR_TWITTERIAN4,
                     POPULAR_TWITTERIAN5)
+from loc_code import LOC_CODE
 
 
 class DailyLifeAndPost:
@@ -130,22 +131,30 @@ class DailyLifeAndPost:
         bp.tistory_post('dexa', title, result, '730606')
         return True
 
-    def realstate_trade(self, bp):
-        result = '<strong><font color="blue">[59~85m²크기의 매매가 10억 이상 아파트]</font></strong><br>중소형 매매가가 10억이 넘어가면 살기 좋은 지역구라 봐도 좋을 것 같아서 매주 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
+    def realstate_trade_over_a_billion(self, bp):
+        result = '<strong><font color="blue">[매매 10억 이상 아파트]</font></strong><br>어디가 10억이상 아파트가 있는지 좀 보기 위해서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
         time_str = '%4d%02d' % (bp.now.year, bp.now.month)
-        apt_district_code = { 11110:  '종로구', 11140:  '중구', 11170:  '용산구',
-                              11200:  '성동구', 11215:  '광진구', 11230:  '동대문구',
-                              11260:  '중랑구', 11290:  '성북구', 11305:  '강북구',
-                              11380:  '은평구', 11410:  '서대문구', 11440:  '마포구',
-                              11470:  '양천구', 11500:  '강서구', 11530:  '구로구',
-                              11545:  '금천구', 11560:  '영등포구', 11590:  '동작구',
-                              11620:  '관악구', 11650:  '서초구', 11680:  '강남구',
-                              11710:  '송파구', 11740:  '강동구', 41290:  '과천시',
-                              41461:  '용인처인구', 41463:  '용인기흥구',
-                              41465:  '용인수지구', 41131:  '성남수정구',
-                              41133:  '성남중원구', 41135:  '성남분당구', }
 
-        for district_code, district in apt_district_code.items():
+        for district_code, district in LOC_CODE.items():
+            request_url = '%s?LAWD_CD=%s&DEAL_YMD=%s&serviceKey=%s' % (
+                          bp.apt_trade_url, district_code, time_str, bp.korea_data_key)
+            trade_info = self.request_realstate_trade_all(bp, request_url, district)
+            print(district_code, district)
+            if trade_info is None or len(trade_info) < 3:  # Actually no data
+                continue
+            print(trade_info)
+            result = '%s<br>%s<br>' % (result, trade_info)
+
+        result = '%s<br><br><br>' % (result)
+        title = '[%s] 매매가 10억 이상 아파트 전체' % bp.today
+        bp.tistory_post('dexa', title, result, '737831')
+        # bp.naver_post(title, result, '9')
+
+    def realstate_trade(self, bp):
+        result = '<strong><font color="blue">[59~85m²크기의 매매가 10억 이상 아파트]</font></strong><br>중소형 매매가가 10억이 넘어가면 살기 좋은 지역구라 봐도 좋을 것 같아서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
+        time_str = '%4d%02d' % (bp.now.year, bp.now.month)
+
+        for district_code, district in LOC_CODE.items():
             request_url = '%s?LAWD_CD=%s&DEAL_YMD=%s&serviceKey=%s' % (
                           bp.apt_trade_url, district_code, time_str, bp.korea_data_key)
             trade_info = self.request_realstate_trade(bp, request_url, district)
@@ -156,7 +165,42 @@ class DailyLifeAndPost:
         result = '%s<br><br><br>' % (result)
         title = '[%s] 59~85m²크기의 매매가 10억 이상 아파트' % bp.today
         bp.tistory_post('dexa', title, result, '737831')
-        bp.naver_post(title, result, '9')
+        # bp.naver_post(title, result, '9')
+
+    def request_realstate_trade_all(self, bp, request_url, district):
+        trade_info = ''
+        req = urllib.request.Request(request_url)
+        try:
+            res = urllib.request.urlopen(req)
+        except UnicodeEncodeError:
+            print('[OpenAPI] UnicodeEncodeError')
+            return
+
+        data = res.read().decode('utf-8')
+        soup = BeautifulSoup(data, 'html.parser')
+        if (soup.resultcode.string != '00'):
+            print('[OpenAPI] ',  soup.resultmsg.string)
+            return
+        items = soup.findAll('item')
+        for item in items:
+            try:
+                infos = re.split('<.*?>', item.text)
+            except TypeError:
+                continue
+
+            price = int(infos[1].strip().replace(',', ''))
+            if price > 99999:  # 10억 이상
+                apt_addr = '%s %s %s' % (district, infos[4], infos[5])
+                apt_link = self.get_danji_url(bp, apt_addr)
+                if apt_link is None:
+                    continue
+                trade_info = '%s<br><a href="%s" target="_blank"><strong>%s %s %s %s층(%sm²) %s만원</strong></a> [준공]%s년[거래]%s년%s월%s' % (
+                             trade_info, apt_link,
+                             district, infos[4], infos[5], infos[11], infos[8],
+                             price,
+                             infos[2],
+                             infos[3], infos[6], infos[7])
+        return trade_info
 
     def request_realstate_trade(self, bp, request_url, district):
         trade_info = ''
@@ -372,11 +416,12 @@ class DailyLifeAndPost:
                          self.dcls_end_day(banks['dcls_end_day']),
                          self.max_limit(banks['max_limit']))
                 result = '%s<td>%s<br><br>%s</td>' % (result,
-                                              banks["mtrt_int"].replace('\n', '<br>'),
-                                              banks["spcl_cnd"].replace('\n', '<br>'))
-                result = '%s<td>가입:%s<br><br>%s</td>' % (result, 
-                                              banks['join_member'].replace('\n', '<br>'),
-                                              banks['etc_note'].replace('\n', '<br>'))
+                                                      banks["mtrt_int"].replace('\n', '<br>'),
+                                                      banks["spcl_cnd"].replace('\n', '<br>'))
+                result = '%s<td>가입:%s<br><br>%s</td>' % (
+                         result,
+                         banks['join_member'].replace('\n', '<br>'),
+                         banks['etc_note'].replace('\n', '<br>'))
                 fin_prdt_cd = banks['fin_prdt_cd']
                 result = '%s<td>' % result
                 for i in range(option_list_len):
