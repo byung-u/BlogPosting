@@ -9,33 +9,39 @@ from trab import TraceDailyComms
 
 async def async_main(loop):
     bp = BlogPost()
+    return
     tap = TraceDailyComms()
     sap = ScrapAndPost()
     dap = DailyLifeAndPost()
 
-    if bp.week_num == 0:  # monday
-        await dap.post_event_n_exhibit(loop, bp)
-        sap.aladin_book(bp, 'ItemNewSpecial', 20)
-    elif bp.week_num == 1:
-        dap.hyundai_curture_center(bp)
-        dap.realstate_trade(bp)
-        sap.aladin_book(bp, 'Bestseller', 20)
-    elif bp.week_num == 2:
-        dap.lotte_curture_center(bp)
-        sap.aladin_book(bp, 'ItemNewAll', 20)
-    elif bp.week_num == 3:
-        dap.savings(bp)  # 적금
-        sap.aladin_book(bp, 'BlogBest', 20)
-    elif bp.week_num == 4:
-        dap.fixed_deposit(bp)  # 예금
-
-    # everyday
-    tap.korea_community_best(bp)
-    dap.popular_twit(bp)
-    await sap.post_reddit(loop, bp)
-    await sap.post_realestate(loop, bp)
     await sap.post_economy(loop, bp)
+    await sap.post_realestate(loop, bp)
     await sap.post_opinion(loop, bp)
+
+    dap.realstate_trade_over_a_billion(bp)
+    dap.realstate_trade(bp)
+    tap.korea_community_best(bp)
+
+    # if bp.week_num == 0:  # monday
+    #     await dap.post_event_n_exhibit(loop, bp)
+    #     sap.aladin_book(bp, 'ItemNewSpecial', 20)
+    # elif bp.week_num == 1:
+    #     dap.hyundai_curture_center(bp)
+    #     sap.aladin_book(bp, 'Bestseller', 20)
+    # elif bp.week_num == 2:
+    #     dap.lotte_curture_center(bp)
+    #     sap.aladin_book(bp, 'ItemNewAll', 20)
+    # elif bp.week_num == 3:
+    #     dap.savings(bp)  # 적금
+    #     sap.aladin_book(bp, 'BlogBest', 20)
+    # elif bp.week_num == 4:
+    #     dap.fixed_deposit(bp)  # 예금
+
+    ## everyday
+    # dap.realstate_trade(bp)
+    # tap.korea_community_best(bp)
+    # dap.popular_twit(bp)
+    # await sap.post_reddit(loop, bp)
 
 
 def main():
