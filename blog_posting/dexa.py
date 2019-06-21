@@ -139,7 +139,6 @@ class DailyLifeAndPost:
             request_url = '%s?LAWD_CD=%s&DEAL_YMD=%s&serviceKey=%s' % (
                           bp.apt_trade_url, district_code, time_str, bp.korea_data_key)
             trade_info = self.request_realstate_trade_all(bp, request_url, district)
-            print(district_code, district)
             if trade_info is None or len(trade_info) < 3:  # Actually no data
                 continue
             print(trade_info)
@@ -187,7 +186,6 @@ class DailyLifeAndPost:
                 infos = re.split('<.*?>', item.text)
             except TypeError:
                 continue
-
             price = int(infos[1].strip().replace(',', ''))
             if price > 99999:  # 10억 이상
                 apt_addr = '%s %s %s' % (district, infos[4], infos[5])
@@ -247,7 +245,7 @@ class DailyLifeAndPost:
         for g_comp in soup.find_all(bp.match_soup_class(['g_comp'])):
             for atag in g_comp.find_all('a'):
                 href = atag['href']
-                if href.startswith('http://realestate.daum.net/maemul/danji') and href.endswith('/info'):
+                if href.startswith('http://place.map.kakao.com'):
                     return href
         return None
 
