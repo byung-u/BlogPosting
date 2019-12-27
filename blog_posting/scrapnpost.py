@@ -1354,8 +1354,8 @@ class ScrapAndPost:
             return self.realestate_molit(bp, keywords_list)
         elif press == '연합뉴스':
             return self.realestate_yonhapnews(bp, keywords_list)
-        elif press == '건설경제':
-            return self.realestate_cnews(bp, keywords_list)
+        # elif press == '건설경제':
+        #     return self.realestate_cnews(bp, keywords_list)
         elif press == '서울경제':
             return self.realestate_sedaily(bp, keywords_list)
         elif press == '더벨':
@@ -1486,7 +1486,8 @@ class ScrapAndPost:
         # bp.naver_post(title, content)
 
     async def post_realestate(self, loop, bp):
-        press_list = ['국토교통부', '연합뉴스', '매일경제', '건설경제',
+        # press_list = ['국토교통부', '연합뉴스', '매일경제', '건설경제',
+        press_list = ['국토교통부', '연합뉴스', '매일경제',
                       '서울경제', '더벨',
                       '경향신문', '국민일보', '노컷뉴스', '동아일보',
                       '문화일보', '중앙일보', '조선일보', '한겨례',
