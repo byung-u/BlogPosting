@@ -132,7 +132,7 @@ class DailyLifeAndPost:
         return True
 
     def realstate_trade_over_a_billion(self, bp):
-        result = '<strong><font color="blue">[매매 10억 이상 아파트]</font></strong><br>어디가 10억이상 아파트가 있는지 좀 보기 위해서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
+        result = '<strong><font color="blue">[매매 15억 이상 아파트]</font></strong><br>어디가 15억이상 아파트가 있는지 좀 보기 위해서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Kakao Map 링크로 넘어가지고 지도상에서 부동산 정보 확인할 수 있습니다.<br>'
         time_str = '%4d%02d' % (bp.now.year, bp.now.month)
 
         for district_code, district in LOC_CODE.items():
@@ -145,24 +145,27 @@ class DailyLifeAndPost:
             result = '%s<br>%s<br>' % (result, trade_info)
 
         result = '%s<br><br><br>' % (result)
-        title = '[%s] 매매가 10억 이상 아파트 전체' % bp.today
+        title = '[%s] 매매가 15억 이상 아파트 전체' % bp.today
         bp.tistory_post('dexa', title, result, '737831')
         # bp.naver_post(title, result, '9')
 
     def realstate_trade(self, bp):
-        result = '<strong><font color="blue">[59~85m²크기의 매매가 10억 이상 아파트]</font></strong><br>중소형 매매가가 10억이 넘어가면 살기 좋은 지역구라 봐도 좋을 것 같아서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Daum 부동산으로 링크되어 넘어갑니다.<br>'
+        result = '<strong><font color="blue">[59~85m²크기의 매매가 15억 이상 아파트]</font></strong><br>중소형 매매가가 15억이 넘어가면 살기 좋은 지역구라 봐도 좋을 것 같아서 매일 확인해서 정리해둡니다.<br>아래 클릭하시면 Kakao Map 링크로 넘어가지고 지도상에서 부동산 정보 확인할 수 있습니다.<br>'
         time_str = '%4d%02d' % (bp.now.year, bp.now.month)
 
         for district_code, district in LOC_CODE.items():
             request_url = '%s?LAWD_CD=%s&DEAL_YMD=%s&serviceKey=%s' % (
                           bp.apt_trade_url, district_code, time_str, bp.korea_data_key)
-            trade_info = self.request_realstate_trade(bp, request_url, district)
+            try:
+                trade_info = self.request_realstate_trade(bp, request_url, district)
+            except TypeError:
+                continue
             if len(trade_info) < 3:  # Actually no data
                 continue
             result = '%s<br>%s<br>' % (result, trade_info)
 
         result = '%s<br><br><br>' % (result)
-        title = '[%s] 59~85m²크기의 매매가 10억 이상 아파트' % bp.today
+        title = '[%s] 59~85m²크기의 매매가 15억 이상 아파트' % bp.today
         bp.tistory_post('dexa', title, result, '737831')
         # bp.naver_post(title, result, '9')
 
@@ -187,7 +190,8 @@ class DailyLifeAndPost:
             except TypeError:
                 continue
             price = int(infos[1].strip().replace(',', ''))
-            if price > 99999:  # 10억 이상
+            # if price > 99999:  # 10억 이상
+            if price > 149999:  # 15억 이상
                 apt_addr = '%s %s %s' % (district, infos[4], infos[5])
                 apt_link = self.get_danji_url(bp, apt_addr)
                 if apt_link is None:
@@ -224,7 +228,8 @@ class DailyLifeAndPost:
             apt_size = float(infos[8])
             if 50.0 < apt_size < 90.0:  # 59 ~ 85
                 price = int(infos[1].strip().replace(',', ''))
-                if price > 99999:  # 10억 이상
+                # if price > 99999:  # 10억 이상
+                if price > 149999:  # 15억 이상
                     apt_addr = '%s %s %s' % (district, infos[4], infos[5])
                     apt_link = self.get_danji_url(bp, apt_addr)
                     if apt_link is None:
