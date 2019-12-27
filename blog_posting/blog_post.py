@@ -11,7 +11,7 @@ import re
 import urllib.request
 
 from datetime import datetime, timedelta
-from googletrans import Translator
+# from googletrans import Translator
 from goose3 import Goose
 from newspaper import Article
 from random import choice
@@ -28,7 +28,7 @@ cgitb.enable(format='text')
 class BlogPost:
     def __init__(self):
         self.g = Goose()
-        self.t = Translator()
+        # self.t = Translator()
 
         self.now = datetime.now()
         self.now_m1 = datetime.now() - timedelta(days=1)  # now - 1 is yesterday
@@ -263,13 +263,14 @@ class BlogPost:
         else:
             self.logger.error('Error Code:' + rescode)
             return ' '
-
+    '''
     def translate_text(self, text, src='en', dest='ko'):
         try:
             ko_text = self.t.translate(text, src=src, dest=dest).text
         except json.decoder.JSONDecodeError:
             return None
         return ko_text
+    '''
 
     def translate_text_list(self, article, src='en', dest='ko'):
         result = []
