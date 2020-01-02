@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from itertools import count
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 # from define import ADSENSE_MIDDLE
 
 
@@ -187,7 +188,9 @@ class ScrapAndPost:
 
     def economy_thebell(self, bp, keywords_list):
         result = ''
-        driver = webdriver.Chrome(bp.chromedriver_path)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(bp.chromedriver_path, options=chrome_options)
         base_url = 'https://www.thebell.co.kr/free/content'
         cnt = 0
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
@@ -227,7 +230,9 @@ class ScrapAndPost:
                 'S2N78', 'S2N70', 'S2N72', 'S2N75', 'S2N76', 'S2N77',
                 'S2N98', 'S2N99', 'S2N101', 'S2N110', ]
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
-        driver = webdriver.Chrome(bp.chromedriver_path)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(bp.chromedriver_path, options=chrome_options)
         for u in urls:
             url = 'http://www.thescoop.co.kr/news/articleList.html?page=1&total=221&sc_section_code=&sc_sub_section_code=%s&sc_serial_code=&sc_area=&sc_level=&sc_article_type=&sc_view_level=&sc_sdate=&sc_edate=&sc_serial_number=&sc_word=&view_type=sm' % u
             driver.implicitly_wait(3)
@@ -916,7 +921,9 @@ class ScrapAndPost:
 
     def realestate_thebell(self, bp, keywords_list):
         result = ''
-        driver = webdriver.Chrome(bp.chromedriver_path)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(bp.chromedriver_path, options=chrome_options)
         base_url = 'https://www.thebell.co.kr/free/content'
         cnt = 0
         today = '%4d-%02d-%02d' % (bp.now.year, bp.now.month, bp.now.day)
