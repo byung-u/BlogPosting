@@ -310,7 +310,10 @@ class ScrapAndPost:
             for sub_list in soup.find_all(bp.match_soup_class(['sub_main_news_list_2'])):
                 for li in sub_list.find_all('li'):
                     title = li.find('div', {'class': 'title'})
-                    article_date = li.a['href'].split("'")[1]
+                    try:
+                        article_date = li.a['href'].split("'")[1]
+                    except IndexError:
+                        continue
                     if not article_date.startswith(today):
                         continue
                     if cnt == 0:
@@ -424,7 +427,10 @@ class ScrapAndPost:
             for sub_list in soup.find_all(bp.match_soup_class(['sub_main_news_list_2'])):
                 for li in sub_list.find_all('li'):
                     title = li.find('div', {'class': 'title'})
-                    article_date = li.a['href'].split("'")[1]
+                    try:
+                        article_date = li.a['href'].split("'")[1]
+                    except IndexError:
+                        continue
                     if not article_date.startswith(today):
                         continue
                     if cnt == 0:
@@ -1465,8 +1471,10 @@ class ScrapAndPost:
                 val != '기자수첩']
 
     async def post_economy(self, loop, bp):
-        press_list = ['더벨', '더스쿱', '연합뉴스', '건설경제', '서울경제',
-                      '경향신문', '매일경제', '조선일보', '한국경제']
+        press_list = ['더벨', '더스쿱', '연합뉴스', '서울경제',
+                      '경향신문', '매일경제', '조선일보']
+        # press_list = ['더벨', '더스쿱', '연합뉴스', '건설경제', '서울경제',
+        #               '경향신문', '매일경제', '조선일보', '한국경제']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'economy')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
@@ -1490,8 +1498,10 @@ class ScrapAndPost:
         press_list = ['국토교통부', '연합뉴스', '매일경제',
                       '서울경제', '더벨',
                       '경향신문', '국민일보', '노컷뉴스', '동아일보',
-                      '문화일보', '중앙일보', '조선일보', '한겨례',
-                      '한국경제', '네이버']
+                      '문화일보', '조선일보', '한겨례',
+                      '네이버']
+                      # '문화일보', '중앙일보', '조선일보', '한겨례',
+                      # '한국경제', '네이버']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'realestate')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
@@ -1512,9 +1522,11 @@ class ScrapAndPost:
         # bp.naver_post(title, content)
 
     async def post_opinion(self, loop, bp):
+        # '문화일보', '세계신문', '중앙일보', '조선일보', '한겨례',
         press_list = ['경향신문', '국민일보', '노컷뉴스', '동아일보', '매일경제',
-                      '문화일보', '세계신문', '중앙일보', '조선일보', '한겨례',
-                      '한국경제', '한국일보']
+                      '문화일보', '조선일보', '한겨례',
+                      '한국일보']
+                      # '한국경제', '한국일보']
         keywords_list = []
         futures = [asyncio.ensure_future(self.fetch(press, loop, bp, keywords_list, 'opinion')) for press in press_list]
         result = await asyncio.gather(*futures)  # 결과를 한꺼번에 가져옴
